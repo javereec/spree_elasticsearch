@@ -1,0 +1,14 @@
+defaults: &defaults
+  hosts: ["127.0.0.1:9200"]
+
+development:
+  <<: *defaults
+  index: development
+
+test:
+  <<: *defaults
+  index: test
+
+production:
+  <<: *defaults
+  index: production
