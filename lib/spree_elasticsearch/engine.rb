@@ -20,14 +20,18 @@ module SpreeElasticsearch
     config.to_prepare &method(:activate).to_proc
 
     config.after_initialize do
-      client = Elasticsearch::Client.new log: true, hosts: Spree::ElasticsearchSettings.hosts
-      # create the index, but continue when it already exists
       begin
-        client.indices.create index: Spree::ElasticsearchSettings.index, body: {}
-      rescue Elasticsearch::Transport::Transport::Errors::BadRequest
+        client = Elasticsearch::Client.new log: true, hosts: Spree::ElasticsearchSettings.hosts
+        # create the index, but continue when it already exists
+        begin
+          client.indices.create index: Spree::ElasticsearchSettings.index, body: {}
+        rescue Elasticsearch::Transport::Transport::Errors::BadRequest
+        end
+        # create or update all mappings on the index
+        client.indices.put_mapping index: Spree::ElasticsearchSettings.index, type: Spree::Product.type, body: Spree::Product.mapping
+      rescue Errno::ENOENT
+        Rails.logger.info "The file config/elasticsearch.yml was not found. Please install with bundle exec rails g spree_elasticsearch:install."
       end
-      # create or update all mappings on the index
-      client.indices.put_mapping index: Spree::ElasticsearchSettings.index, type: Spree::Product.type, body: Spree::Product.mapping
     end
   end
 end

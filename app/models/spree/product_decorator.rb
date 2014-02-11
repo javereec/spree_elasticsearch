@@ -4,11 +4,11 @@ module Spree
     class Product::ElasticsearchQuery
       include ::Virtus.model
 
-      attribute :name, String
       attribute :description, String
-      attribute :available_on, DateTime
+      attribute :name, String
       attribute :price, Array
       attribute :properties, Hash
+      attribute :query, String
       attribute :taxons, Array
 
       # Method that creates the actual query based on the current attributes.
@@ -27,6 +27,10 @@ module Spree
       # }
       def to_hash
         must_matches = []
+        # search in name and description
+        if query
+          must_matches << { multi_match: { query: query, fields: ['name','description'] } }
+        end
         if name
           must_matches << { match: { name: name } }
         end
@@ -66,7 +70,7 @@ module Spree
 
     # Excluse following keys when retrieving something from the Elasticsearch response
     def self.exclude_from_response
-      ['properties']
+      ['properties','taxons']
     end
 
     # Used at startup when creating or updating the index with all type mappings
@@ -99,7 +103,7 @@ module Spree
       }
       # debugger
       result['properties'] = properties_to_hash unless properties_to_hash.empty?
-      result['taxons'] = taxons.to_a unless taxons.empty?
+      result['taxons'] = taxons.map(&:id) unless taxons.empty?
       result
     end
 

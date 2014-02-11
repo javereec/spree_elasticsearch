@@ -1,6 +1,6 @@
-# SpreeElasticsearch
+# Spree Elasticsearch
 
-This extension uses elasticsearch-ruby for integration of Elasticsearch with Spree. While you can use this as configured.
+This extension uses elasticsearch-ruby for integration of Elasticsearch with Spree. This is preconfigured for a certain use case, but by all means override where necessary.
 
 ## Installation
 
