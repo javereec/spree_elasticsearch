@@ -5,6 +5,7 @@ module Spree
       include ::Virtus.model
 
       attribute :description, String
+      attribute :from, Integer, default: 0
       attribute :name, String
       attribute :price, Array
       attribute :properties, Hash
@@ -24,6 +25,9 @@ module Spree
       #       }
       #     }
       #   }
+      #   sort: [],
+      #   from: ,
+      #   size:
       # }
       def to_hash
         must_matches = []
@@ -57,7 +61,9 @@ module Spree
         # basic skeleton
         result = {
           query: { filtered: { } },
-          sort: sorting
+          sort: sorting,
+          from: from,
+          size: Spree::Config.products_per_page
         }
         # add query and filters to filtered
         result[:query][:filtered][:query] = query unless query.nil?
@@ -68,7 +74,7 @@ module Spree
 
     include Concerns::Indexable
 
-    # Excluse following keys when retrieving something from the Elasticsearch response
+    # Exclude following keys when retrieving something from the Elasticsearch response.
     def self.exclude_from_response
       ['properties','taxons']
     end

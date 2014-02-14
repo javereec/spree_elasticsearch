@@ -3,10 +3,12 @@ module Spree
     module Indexable
       class ResultList
         include Enumerable
+        include Kaminari::PageScopeMethods
+        include ::Virtus.model
 
-        attr_accessor :results
-        attr_accessor :total
-        attr_accessor :from
+        attribute :results, Array
+        attribute :total, Integer
+        attribute :from, Integer
 
         def initialize(results, from, total)
           self.results = results
@@ -16,6 +18,24 @@ module Spree
 
         def each(*args, &block)
           results.each(*args, &block)
+        end
+
+        def empty?
+          self.count == 0
+        end
+
+        # Kaminari pagination support
+
+        def limit_value
+          Spree::Config.products_per_page
+        end
+
+        def offset_value
+          from
+        end
+
+        def total_count
+          total
         end
       end
 

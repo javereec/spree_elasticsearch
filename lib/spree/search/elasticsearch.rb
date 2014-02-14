@@ -21,7 +21,8 @@ module Spree
       end
 
       def retrieve_products
-        Spree::Product.search(query: query, taxons: taxons).results
+        from = (@page - 1) * Spree::Config.products_per_page
+        Spree::Product.search(query: query, taxons: taxons, from: from)
       end
 
       protected
