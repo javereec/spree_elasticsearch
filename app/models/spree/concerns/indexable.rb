@@ -9,19 +9,14 @@ module Spree
         attribute :results, Array
         attribute :total, Integer
         attribute :from, Integer
-
-        def initialize(results, from, total)
-          self.results = results
-          self.from = from
-          self.total = total
-        end
+        attribute :facets, Array
 
         def each(*args, &block)
           results.each(*args, &block)
         end
 
         def empty?
-          self.count == 0
+          count == 0
         end
 
         # Kaminari pagination support
@@ -95,6 +90,7 @@ module Spree
 
           result = client.search search_args
 
+          # Convert all results to objects using the information in the _source.
           result_list = result["hits"]["hits"].map do |item|
             object_attributes = item["_source"]
             object_attributes.except!(*exclude_from_response)
@@ -103,7 +99,21 @@ module Spree
             model
           end
 
-          ResultList.new(result_list, Integer(args.fetch(:from, 0)), result["hits"]["total"])
+          # Convert all facets to facet objects
+          facet_list = result["facets"].map do |tuple|
+            name = tuple[0]
+            hash = tuple[1]
+            type = hash["_type"]
+            body = hash.except!("_type")
+            Spree::Search::Elasticsearch::Facet.new(name: name, search_name: name, type: type, body: body)
+          end
+
+          ResultList.new(
+            results: result_list,
+            from: Integer(args.fetch(:from, 0)),
+            total: result["hits"]["total"],
+            facets: facet_list
+          )
         end
 
         def type
@@ -130,16 +140,10 @@ module Spree
         doc.delete(:id)
         doc.delete(:version)
 
-        result = client.index id: id,
-                              type: type,
-                              index: configuration.index,
-                              body: doc
-
-        unless result['ok']
-          raise "Indexing Error: #{result.inspect}"
-        end
-
-        result
+        client.index id: id,
+                     type: type,
+                     index: configuration.index,
+                     body: doc
       end
 
       def type

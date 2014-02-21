@@ -8,7 +8,7 @@ module Spree
       attribute :from, Integer, default: 0
       attribute :name, String
       attribute :price, Array
-      attribute :properties, Hash
+      attribute :properties, Array
       attribute :query, String
       attribute :taxons, Array
 
@@ -27,7 +27,8 @@ module Spree
       #   }
       #   sort: [],
       #   from: ,
-      #   size:
+      #   size: ,
+      #   facets:
       # }
       def to_hash
         must_matches = []
@@ -38,18 +39,19 @@ module Spree
         if name
           must_matches << { match: { name: name } }
         end
-        unless properties.empty?
-          # transform properties to array of match definitions
-          properties.map do |k,v|
-            must_matches << { match: { "properties.#{k}" => v } }
-          end
-        end
         must_matches << { match_all: {} } if must_matches.empty?
         query = { bool: { must: must_matches } }
 
         and_filter = []
         unless taxons.empty?
           and_filter << { terms: { taxons: taxons } }
+        end
+        unless properties.nil? || properties.empty?
+          # transform properties from [{"key" => "value"}] to ["key||value"]
+          properties.map! do |property|
+            property.to_a.join("||")
+          end
+          and_filter << { terms: { properties: properties } }
         end
 
         unless price.empty?
@@ -58,13 +60,22 @@ module Spree
 
         sorting = [ name: { order: "asc" } ]
 
+        # facets
+        facets = {
+          price: { statistical: { field: "price" } },
+          properties: { terms: { field: "properties" } },
+          taxons: { terms: { field: "taxons" } }
+        }
+
         # basic skeleton
         result = {
           query: { filtered: { } },
           sort: sorting,
           from: from,
-          size: Spree::Config.products_per_page
+          size: Spree::Config.products_per_page,
+          facets: facets
         }
+
         # add query and filters to filtered
         result[:query][:filtered][:query] = query unless query.nil?
         result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
@@ -87,15 +98,9 @@ module Spree
         description: { type: 'string', analyzer: 'snowball' },
         available_on: { type: 'date', format: 'dateOptionalTime', include_in_all: false },
         price: { type: 'double' },
+        properties: { type: 'string', index: 'not_analyzed'},
         taxons: { type: 'string', index: 'not_analyzed' }
       }
-    end
-
-    # Put all properties of a product in a hash. The key is the name of the property.
-    def properties_to_hash
-      result = {}
-      self.product_properties.each{|pp| result[pp.property.name] = pp.value}
-      result
     end
 
     # Used when creating or updating a document in the index
@@ -108,8 +113,8 @@ module Spree
         'price' => price,
       }
       # debugger
-      result['properties'] = properties_to_hash unless properties_to_hash.empty?
-      result['taxons'] = taxons.map(&:id) unless taxons.empty?
+      result['properties'] = product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"} unless product_properties.empty?
+      result['taxons'] = taxons.map(&:name) unless taxons.empty?
       result
     end
 

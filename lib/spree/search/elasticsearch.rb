@@ -11,7 +11,7 @@ module Spree
       attribute :price_low, Float
       attribute :price_high, Float
       attribute :taxons, Array
-      attribute :properties, Hash
+      attribute :properties, Array
       attribute :per_page, String
       attribute :page, String
 
@@ -22,7 +22,14 @@ module Spree
 
       def retrieve_products
         from = (@page - 1) * Spree::Config.products_per_page
-        Spree::Product.search(query: query, taxons: taxons, from: from)
+        price = [price_low, price_high] if (price_low && price_high)
+        Spree::Product.search(
+          query: query,
+          taxons: taxons,
+          from: from,
+          price: price,
+          properties: properties
+        )
       end
 
       protected
@@ -30,8 +37,17 @@ module Spree
       # converts params to instance variables
       def prepare(params)
         @query = params[:keywords]
+        # taxon
         taxon = params[:taxon].blank? ? nil : Spree::Taxon.find(params[:taxon])
-        @taxons = taxon ? taxon.self_and_descendants.map(&:id) : nil
+        @taxons = taxon ? taxon.self_and_descendants.map(&:name) : nil
+        if params[:search]
+          # price
+          @price_low = params[:search][:price_min]
+          @price_high = params[:search][:price_max]
+          # properties
+          @properties = params[:search][:properties]
+        end
+
         @per_page = (params[:per_page].to_i <= 0) ? Spree::Config[:products_per_page] : params[:per_page].to_i
         @page = (params[:page].to_i <= 0) ? 1 : params[:page].to_i
       end

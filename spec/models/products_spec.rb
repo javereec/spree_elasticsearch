@@ -6,18 +6,14 @@ module Spree
     let(:another_product) { create(:product) }
 
     before(:each) do
+      # for clean testing, delete index, create new one and create/update mapping
       Spree::Product.delete_all
+      client = Elasticsearch::Client.new log: true, hosts: Spree::ElasticsearchSettings.hosts
+      client.indices.create index: Spree::ElasticsearchSettings.index, body: {}
+      client.indices.put_mapping index: Spree::ElasticsearchSettings.index, type: Spree::Product.type, body: Spree::Product.mapping
     end
 
     context "#index" do
-      it "stores a new product in the index" do
-        a_product = build(:product)
-        a_product.save
-        result = a_product.index
-        result['ok'].should be_true
-        result['_id'].should == a_product.id.to_s
-      end
-
       it "updates an existing product in the index" do
         a_product.name = "updated name"
         result = a_product.index
@@ -70,12 +66,33 @@ module Spree
 
       context 'properties' do
         it "allows searching on property" do
-          debugger
           a_product.set_property('the_prop', 'a_value')
           product = Spree::Product.find(a_product.id)
           product.save
           sleep 3 # allow some time for elasticsearch
-          Spree::Product.search(properties: { 'the_prop' => 'a_value' })
+          products = Spree::Product.search(properties: [{ 'the_prop' => 'a_value' }])
+          products.count.should == 1
+          products.to_a[0].name.should == product.name
+        end
+      end
+
+      context 'facets' do
+        it "contains price facet" do
+          products = Spree::Product.search(name: a_product.name)
+          facet = products.facets.find {|facet| facet.name == "price"}
+          facet.should_not be_nil
+          facet.type.should == "statistical"
+        end
+
+        it "contains taxons facet" do
+          taxon = create(:taxon)
+          a_product.taxons << taxon
+          a_product.save
+          sleep 3 # allow some time for elasticsearch
+          products = Spree::Product.search(name: a_product.name)
+          facet = products.facets.find {|facet| facet.name == "taxons"}
+          facet.should_not be_nil
+          facet.type.should == "terms"
         end
       end
     end

@@ -1,0 +1,29 @@
+<% unless @products.empty? %>
+  <%= form_tag '', :method => :get, :id => 'sidebar_products_search' do %>
+    <% params[:search] ||= {} %>
+    <%= hidden_field_tag 'per_page', params[:per_page] %>
+    <% facets = process_facets(@products.facets) %>
+    <% facets.each do |facet| %>
+      <div class="navigation" data-hook="navigation">
+        <h6 class="filter-title"> <%= facet.name %> </h6>
+        <% if facet.type == "statistical" %>
+          <input type="text" name="search[<%= facet.search_name %>_min]" value="<%= facet.body["min"] %>" /> - <input type="text" name="search[<%= facet.search_name %>_max]" value="<%= facet.body["max"] %>" />
+        <% end %>
+        <% if facet.type == "terms" %>
+          <ul class="filter_choices unstyled">
+            <% facet.body["terms"].each do |term| %>
+            <li class="nowrap">
+              <input type="checkbox"
+                     id="<%= term["term"] %>"
+                     name="search[<%= facet.search_name %>][][<%= facet.name %>]"
+                     value="<%= term["term"] %>" />
+              <label class="nowrap" for="<%= term["term"] %>"> <%= term["term"] %> (<%= term["count"] %>)</label>
+            </li>
+            <% end %>
+          </ul>
+        <% end %>
+      </div>
+    <% end %>
+    <%= submit_tag Spree.t(:search), :name => nil %>
+  <% end %>
+<% end %>

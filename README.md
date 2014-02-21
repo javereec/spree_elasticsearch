@@ -2,6 +2,12 @@
 
 This extension uses elasticsearch-ruby for integration of Elasticsearch with Spree. This is preconfigured for a certain use case, but by all means override where necessary.
 
+To understand what is going on, you should first learn about Elasticsearch. Some great resources:
+
+* http://exploringelasticsearch.com is an excellent introduction to Elasticsearch
+* http://elastichammer.exploringelasticsearch.com/ is a tool to test queries against your own Elasticsearch cluster
+* https://www.found.no/play/ is an another online tool that can be used to play with Elasticsearch. The online version communicates with an online cluster run by Found.
+
 ## Installation
 
 Add spree_elasticsearch to your Gemfile:
@@ -21,12 +27,12 @@ Edit the file in `config\elasticsearch.yml` to match your configuration.
 
 ### Elasticsearch
 
-Elasticsearch is very easy to install. Get and unzip elasticsearch 0.90.x: http://www.elasticsearch.org/download
+Elasticsearch is very easy to install. Get and unzip elasticsearch 1.0.x: http://www.elasticsearch.org/download
 
 Start:
 
 ```shell
-bin/elasticsearch -f
+bin/elasticsearch
 ```
 
 Execute following to drop index (all) and have a fresh start:
