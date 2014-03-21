@@ -32,6 +32,16 @@ module Spree
         def total_count
           total
         end
+
+        def max_pages
+          nil
+        end
+
+        # Spree cache_key_for_products support
+
+        def maximum(column)
+          results.max {|a,b| a.send(column) <=> b.send(column)}.send(column)
+        end
       end
 
       extend ActiveSupport::Concern
@@ -94,7 +104,8 @@ module Spree
           result_list = result["hits"]["hits"].map do |item|
             object_attributes = item["_source"]
             object_attributes.except!(*exclude_from_response)
-            model = new(object_attributes)
+            # model = find(object_attributes["id"]) # get the record from the database
+            model = new(object_attributes) # instantiate record to avoid selection in spree_products
             model.version = item["_version"]
             model
           end

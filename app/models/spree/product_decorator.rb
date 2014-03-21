@@ -87,7 +87,7 @@ module Spree
 
     # Exclude following keys when retrieving something from the Elasticsearch response.
     def self.exclude_from_response
-      ['properties','taxons']
+      ['properties','taxons','variants']
     end
 
     # Used at startup when creating or updating the index with all type mappings
@@ -97,6 +97,7 @@ module Spree
         name: { type: 'string', analyzer: 'snowball', boost: 100 },
         description: { type: 'string', analyzer: 'snowball' },
         available_on: { type: 'date', format: 'dateOptionalTime', include_in_all: false },
+        updated_at: { type: 'date', format: 'dateOptionalTime', include_in_all: false },
         price: { type: 'double' },
         properties: { type: 'string', index: 'not_analyzed'},
         taxons: { type: 'string', index: 'not_analyzed' }
@@ -110,11 +111,18 @@ module Spree
         'name' => name,
         'description' => description,
         'available_on' => available_on,
+        'updated_at' => updated_at,
         'price' => price,
       }
-      # debugger
       result['properties'] = product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"} unless product_properties.empty?
       result['taxons'] = taxons.map(&:name) unless taxons.empty?
+      # add variants information
+      if variants.length > 0
+        result['variants'] = []
+        variants.each do |variant|
+          result['variants'] << variant.attributes
+        end
+      end
       result
     end
 
