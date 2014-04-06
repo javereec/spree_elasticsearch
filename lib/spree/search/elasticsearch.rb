@@ -11,7 +11,7 @@ module Spree
       attribute :price_low, Float
       attribute :price_high, Float
       attribute :taxons, Array
-      attribute :properties, Array
+      attribute :properties, Hash
       attribute :per_page, String
       attribute :page, String
 
@@ -42,8 +42,8 @@ module Spree
         @taxons = taxon ? taxon.self_and_descendants.map(&:name) : nil
         if params[:search]
           # price
-          @price_low = params[:search][:price_min]
-          @price_high = params[:search][:price_max]
+          @price_low = params[:search][:price][:min]
+          @price_high = params[:search][:price][:max]
           # properties
           @properties = params[:search][:properties]
         end

@@ -39,7 +39,7 @@ module Spree
           facet
         end
       end.flatten!
-      facets
+      facets.sort{|a,b| a.name <=> b.name}
     end
   end
 end

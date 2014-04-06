@@ -8,7 +8,7 @@ module Spree
       attribute :from, Integer, default: 0
       attribute :name, String
       attribute :price, Array
-      attribute :properties, Array
+      attribute :properties, Hash
       attribute :query, String
       attribute :taxons, Array
 
@@ -31,31 +31,25 @@ module Spree
       #   facets:
       # }
       def to_hash
-        must_matches = []
-        # search in name and description
-        if query
-          must_matches << { multi_match: { query: query, fields: ['name','description'] } }
+        q = { match_all: {} }
+        if query # search in name and description
+          q = { query_string: { query: query, fields: ['name^5','description'], use_dis_max: true } }
+        end        
+        query = q
+
+        and_taxon_filter = []
+        unless taxons.empty?
+          and_taxon_filter << { terms: { taxons: taxons } }
         end
-        if name
-          must_matches << { match: { name: name } }
-        end
-        must_matches << { match_all: {} } if must_matches.empty?
-        query = { bool: { must: must_matches } }
 
         and_filter = []
-        unless taxons.empty?
-          and_filter << { terms: { taxons: taxons } }
-        end
-        unless properties.nil? || properties.empty?
-          # transform properties from [{"key" => "value"}] to ["key||value"]
-          properties.map! do |property|
-            property.to_a.join("||")
-          end
-          and_filter << { terms: { properties: properties } }
-        end
-
         unless price.empty?
-          and_filter << { range: { price: { gte: price[0], lt: price[1] } } }
+          and_filter << { range: { price: { gte: price[0], lte: price[1] } } }
+        end
+        unless @properties.nil? || @properties.empty?
+          # transform properties from [{"key" => ["value_a","value_b"]}] to ["key||value_a","key||value_b"]
+          properties = @properties.map {|k,v| [k].product(v)}.flatten(1).map{|pair| pair.join("||")}
+          and_filter << { terms: { properties: properties } }
         end
 
         sorting = [ name: { order: "asc" } ]
@@ -63,13 +57,12 @@ module Spree
         # facets
         facets = {
           price: { statistical: { field: "price" } },
-          properties: { terms: { field: "properties" } },
-          taxons: { terms: { field: "taxons" } }
+          properties: { terms: { field: "properties", order: "reverse_count", size: 1000000 } } 
         }
 
         # basic skeleton
         result = {
-          query: { filtered: { } },
+          query: { filtered: {} },
           sort: sorting,
           from: from,
           size: Spree::Config.products_per_page,
@@ -77,8 +70,12 @@ module Spree
         }
 
         # add query and filters to filtered
-        result[:query][:filtered][:query] = query unless query.nil?
-        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
+        result[:query][:filtered][:query] = query
+        result[:query][:filtered][:filter] = { "and" => and_taxon_filter } unless and_taxon_filter.empty?
+
+        # add price / property filter
+        result[:filter] = { "and" => and_filter } unless and_filter.empty?
+
         result
       end
     end

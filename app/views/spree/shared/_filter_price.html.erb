@@ -1,0 +1,67 @@
+<fieldset class="facet">
+  <h4 class="filter"><%= facet.name %></h4>
+  <div class="facet-box">
+    <div class="slider">
+      <div class="rangeslider_top_margin"></div>
+      <input type="text" id="price" />
+    </div>
+    <div class="slider-input">
+      <input type="text" id="price-min" name="search[price][min]" value"<%= facet.body["min"] %>">
+      <span>tot</span>
+      <input type="text" id="price-max" name="search[price][max]" value"<%= facet.body["max"] %>">
+    </div>
+  </div>
+</fieldset>
+
+<% content_for :head do %>
+  <%= stylesheet_link_tag 'ion.rangeSlider', :media => 'screen' %>
+  <%= stylesheet_link_tag 'ion.rangeSlider.skinFlat', :media => 'screen' %>
+  <script type='text/javascript'>
+    $(document).ready(function(){
+      $("#price-min").change(function () {
+        // check if not below minimum
+        $("#price").ionRangeSlider("update", {
+          from: $(this).val()
+        });
+      });
+
+      $("#price-max").change(function () {
+        // check if not above maximum
+        $("#price").ionRangeSlider("update", {
+          to: $(this).val()
+        });
+      });
+
+      minimum = <%= (facet.body["min"] == facet.body["max"] ? (facet.body["min"] - 1) : facet.body["min"]).floor %>;
+      maximum = <%= (facet.body["max"] == facet.body["min"] ? (facet.body["min"] + 1) : facet.body["max"]).ceil %>;
+      min_param = minimum;
+      <% if params[:search] && params[:search][:price] %>
+        min_param = <%= params[:search][:price][:min] %>
+      <% end %>
+      max_param = maximum;
+      <% if params[:search] && params[:search][:price] %>
+        max_param = <%= params[:search][:price][:max] %>
+      <% end %>
+
+      $("#price").ionRangeSlider({
+        min: minimum,
+        max: maximum,
+        from: min_param,
+        to: max_param,
+        type: 'double',
+        step: 1,
+        prefix: "€",
+        prettify: false,
+        hasGrid: false,
+        onLoad: function(obj) { 
+          $("#price-min").val(obj.fromNumber);
+          $("#price-max").val(obj.toNumber);
+        },
+        onChange: function(obj) { 
+          $("#price-min").val(obj.fromNumber);
+          $("#price-max").val(obj.toNumber);
+        }
+      });
+    });
+  </script>
+<% end %>

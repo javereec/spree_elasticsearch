@@ -1,0 +1,19 @@
+<% facets.each do |facet| %>
+  <fieldset class="facet">
+    <h4 class="filter"><%= facet.name %></h4>
+    <div class="facet-box">
+      <ul class="filter_choices unstyled">
+        <% facet.body["terms"].each do |term| %>
+        <li class="nowrap">
+          <input type="checkbox"
+                 id="<%= term["term"] %>"
+                 name="search[properties][<%= facet.name %>][]"
+                 value="<%= term["term"] %>"
+                 <%= params[:search][:properties] && params[:search][:properties][facet.name] && params[:search][:properties][facet.name].include?(term["term"]) ? "checked" : "" %> />
+          <label class="nowrap" for="<%= term["term"] %>"> <%= term["term"] %> (<%= term["count"] %>)</label>
+        </li>
+        <% end %>
+      </ul>
+    </div>
+  </fieldset>
+<% end %>
