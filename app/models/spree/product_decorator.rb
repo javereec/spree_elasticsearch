@@ -47,9 +47,13 @@ module Spree
           and_filter << { range: { price: { gte: price[0], lte: price[1] } } }
         end
         unless @properties.nil? || @properties.empty?
-          # transform properties from [{"key" => ["value_a","value_b"]}] to ["key||value_a","key||value_b"]
-          properties = @properties.map {|k,v| [k].product(v)}.flatten(1).map{|pair| pair.join("||")}
-          and_filter << { terms: { properties: properties } }
+          # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]} 
+          # to { terms: { properties: ["key1||value_a","key1||value_b"] }
+          #    { terms: { properties: ["key2||value_a"] }
+          # This enforces "and" relation between different property values and "or" relation between same property values
+          properties = @properties.map {|k,v| [k].product(v)}.map do |pair| 
+            and_filter << { terms: { properties: [pair.join("||")] } }
+          end
         end
 
         sorting = [ name: { order: "asc" } ]
