@@ -18,13 +18,14 @@ module Spree
       #   query: {
       #     filtered: {
       #       query: {
-      #         must: { match: [] }
+      #         query_string: { query: , fields: [] }
       #       }
       #       filter: {
-      #         and: []
+      #         terms: { taxons: [] }
       #       }
       #     }
       #   }
+      #   filter: { and: [ { terms: { properties: [] } } ] }
       #   sort: [],
       #   from: ,
       #   size: ,
@@ -36,11 +37,6 @@ module Spree
           q = { query_string: { query: query, fields: ['name^5','description'], use_dis_max: true } }
         end        
         query = q
-
-        and_taxon_filter = []
-        unless taxons.empty?
-          and_taxon_filter << { terms: { taxons: taxons } }
-        end
 
         and_filter = []
         unless price.empty?
@@ -75,7 +71,7 @@ module Spree
 
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
-        result[:query][:filtered][:filter] = { "and" => and_taxon_filter } unless and_taxon_filter.empty?
+        result[:query][:filtered][:filter] = { terms: { taxons: taxons } } unless taxons.empty?
 
         # add price / property filter
         result[:filter] = { "and" => and_filter } unless and_filter.empty?
