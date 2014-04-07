@@ -70,10 +70,38 @@ module Spree
           product = Spree::Product.find(a_product.id)
           product.save
           sleep 3 # allow some time for elasticsearch
-          products = Spree::Product.search(properties: [{ 'the_prop' => 'a_value' }])
+          products = Spree::Product.search(properties: { 'the_prop' => ['a_value'] })
           products.count.should == 1
           products.to_a[0].name.should == product.name
         end
+
+        it "allows searching on different property values (OR relation)" do
+          a_product.set_property('the_prop', 'a_value')
+          product_one = Spree::Product.find(a_product.id)
+          product_one.save
+          another_product.set_property('the_prop', 'b_value')
+          product_two = Spree::Product.find(another_product.id)
+          product_two.save
+          sleep 3 # allow some time for elasticsearch
+          products = Spree::Product.search(properties: { 'the_prop' => ['a_value', 'b_value'] })
+          products.count.should == 2
+          products.to_a.find {|p| p.name == product_one.name}.should_not be_nil
+          products.to_a.find {|p| p.name == product_two.name}.should_not be_nil
+        end 
+
+        it "allows searching on different properties (AND relation)" do
+          a_product.set_property('the_prop', 'a_value')
+          a_product.set_property('another_prop', 'a_value')
+          product = Spree::Product.find(a_product.id)
+          product.save
+          another_product.set_property('the_prop', 'a_value')
+          another_product.set_property('another_prop', 'b_value')
+          Spree::Product.find(another_product.id).save
+          sleep 3 # allow some time for elasticsearch
+          products = Spree::Product.search(properties: { 'the_prop' => ['a_value'], 'another_prop' => ['a_value'] })
+          products.count.should == 1
+          products.to_a[0].name.should == product.name
+        end        
       end
 
       context 'facets' do
@@ -82,17 +110,6 @@ module Spree
           facet = products.facets.find {|facet| facet.name == "price"}
           facet.should_not be_nil
           facet.type.should == "statistical"
-        end
-
-        it "contains taxons facet" do
-          taxon = create(:taxon)
-          a_product.taxons << taxon
-          a_product.save
-          sleep 3 # allow some time for elasticsearch
-          products = Spree::Product.search(name: a_product.name)
-          facet = products.facets.find {|facet| facet.name == "taxons"}
-          facet.should_not be_nil
-          facet.type.should == "terms"
         end
       end
     end

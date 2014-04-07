@@ -52,7 +52,7 @@ module Spree
           #    { terms: { properties: ["key2||value_a"] }
           # This enforces "and" relation between different property values and "or" relation between same property values
           properties = @properties.map {|k,v| [k].product(v)}.map do |pair| 
-            and_filter << { terms: { properties: [pair.join("||")] } }
+            and_filter << { terms: { properties: pair.map {|prop| prop.join("||")} } }
           end
         end
 
