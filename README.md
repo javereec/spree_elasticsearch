@@ -27,7 +27,7 @@ Edit the file in `config\elasticsearch.yml` to match your configuration.
 
 ### Elasticsearch
 
-Elasticsearch is very easy to install. Get and unzip elasticsearch 1.0.x: http://www.elasticsearch.org/download
+Elasticsearch is very easy to install. Get and unzip elasticsearch 1.x.x: http://www.elasticsearch.org/download
 
 Start:
 
@@ -39,6 +39,12 @@ Execute following to drop index (all) and have a fresh start:
 
 ```shell
 curl -XDELETE 'http://localhost:9200'
+```
+
+Elasticsearch has a nifty plugin, called Marvel, you can install to view the status of the cluster, but which can also serve as a tool to debug the commands you're running against the cluser. This tool is free for development purposes, but requires a license for production environments. You can install it by executing the following.
+
+```shell
+bin/plugin -i elasticsearch/marvel/latest
 ```
 
 ## Testing
