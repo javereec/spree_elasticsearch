@@ -41,7 +41,7 @@ module Spree
 
         def maximum(column)
           maximum_record = results.max {|a,b| a.send(column) <=> b.send(column)}
-          return nil unless maximum_record
+          return 0 unless maximum_record
           maximum_record.send(column)
         end
       end

@@ -153,9 +153,9 @@ module Spree
         products.maximum(:updated_at).to_i.should == a_product.updated_at.to_i # == doesn't seem to work for ActiveSupport::TimeWithZone, converting to integer
       end
 
-      it 'returns nil as maximum updated_at when no results' do
+      it 'returns 0 as maximum updated_at when no results' do
         products = Spree::Product.search(query: 'qwertyasdfg')
-        products.maximum(:updated_at).should be_nil
+        products.maximum(:updated_at).should == 0
       end
     end
   end
