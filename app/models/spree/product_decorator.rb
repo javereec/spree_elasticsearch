@@ -99,6 +99,23 @@ module Spree
       }
     end
 
+    #
+    def cache_key
+      if elasticsearch_index # elasticsearch attribute
+        timestamp = updated_at.try(:utc).try(:to_s,:nsec) # nsec is default cache key format (https://github.com/rails/rails/blob/4-0-stable/activerecord/lib/active_record/integration.rb)
+        return "#{self.class.model_name.cache_key}/#{id}-#{timestamp}"
+      end
+      case
+      when new_record?
+        "#{self.class.model_name.cache_key}/new"
+      when timestamp = max_updated_column_timestamp
+        timestamp = timestamp.utc.to_s(cache_timestamp_format)
+        "#{self.class.model_name.cache_key}/#{id}-#{timestamp}"
+      else
+        "#{self.class.model_name.cache_key}/#{id}"
+      end
+    end
+
     # Used when creating or updating a document in the index
     def to_hash
       result = {

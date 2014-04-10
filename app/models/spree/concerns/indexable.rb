@@ -41,7 +41,7 @@ module Spree
 
         def maximum(column)
           maximum_record = results.max {|a,b| a.send(column) <=> b.send(column)}
-          return 0 unless maximum_record
+          return 0 if maximum_record.nil?
           maximum_record.send(column)
         end
       end
@@ -49,6 +49,7 @@ module Spree
       extend ActiveSupport::Concern
 
       included do
+        attr_accessor :elasticsearch_index
         attr_accessor :version
         after_save :update_index
         after_destroy :update_index
@@ -79,6 +80,7 @@ module Spree
           object_attributes = result["_source"]
           object_attributes.except!(*exclude_from_response)
           model = self.new(object_attributes)
+          model.elasticsearch_index = item["_index"]
           model.version = result["_version"]
           model
         end
@@ -108,7 +110,8 @@ module Spree
             object_attributes.except!(*exclude_from_response)
             # model = find(object_attributes["id"]) # get the record from the database
             model = new(object_attributes) # instantiate record to avoid selection in spree_products
-            model.version = item["_version"]
+            model.elasticsearch_index = item["_index"]
+            # model.version = item["_version"] # version isn't returned when using search
             model
           end
 

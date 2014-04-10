@@ -24,6 +24,18 @@ module Spree
       end
     end
 
+    context "#elasticsearch_index" do
+      it "is set when product is retrieved from the index" do
+        product_from_index = Product.get(a_product.id)
+        product_from_index.elasticsearch_index.should == Spree::ElasticsearchSettings.index
+      end
+
+      it "is set when products are searched in the index" do
+        products = Spree::Product.search(query: a_product.name)
+        products.first.elasticsearch_index.should == Spree::ElasticsearchSettings.index
+      end
+    end
+
     context 'get' do
       it "retrieves a product form the index" do
         product_from_index = Product.get(a_product.id)
