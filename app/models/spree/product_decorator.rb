@@ -4,9 +4,7 @@ module Spree
     class Product::ElasticsearchQuery
       include ::Virtus.model
 
-      attribute :description, String
       attribute :from, Integer, default: 0
-      attribute :name, String
       attribute :price, Array
       attribute :properties, Hash
       attribute :query, String

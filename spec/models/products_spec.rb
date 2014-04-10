@@ -1,4 +1,5 @@
 require 'spec_helper'
+require 'byebug'
 
 module Spree
   describe Spree::Product do
@@ -35,7 +36,7 @@ module Spree
         another_product.name = "Foobar"
         another_product.index
         sleep 3 # allow some time for elasticsearch
-        products = Spree::Product.search(name: another_product.name)
+        products = Spree::Product.search(query: another_product.name)
         products.total.should == 1
         products.any?{ |p| p.name == another_product.name }.should be_true
       end
@@ -46,7 +47,7 @@ module Spree
         a_product.index
         another_product.index
         sleep 3 # allow some time for elasticsearch
-        products = Spree::Product.search(name: 'Product')
+        products = Spree::Product.search(query: 'Product')
         products.total.should == 2
         products.any?{ |p| p.name == a_product.name }.should be_true
         products.any?{ |p| p.name == another_product.name }.should be_true
@@ -144,5 +145,18 @@ module Spree
       end
     end
 
+    context 'third party support' do
+      it 'returns maximum updated_at for caching purposes' do
+        a_product.index
+        sleep 2
+        products = Spree::Product.search(query: "name:\"#{a_product.name}\"")
+        products.maximum(:updated_at).to_i.should == a_product.updated_at.to_i # == doesn't seem to work for ActiveSupport::TimeWithZone, converting to integer
+      end
+
+      it 'returns nil as maximum updated_at when no results' do
+        products = Spree::Product.search(query: 'qwertyasdfg')
+        products.maximum(:updated_at).should be_nil
+      end
+    end
   end
 end
