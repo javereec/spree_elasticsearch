@@ -8,8 +8,8 @@ module Spree
       include ::Virtus.model
 
       attribute :query, String
-      attribute :price_low, Float
-      attribute :price_high, Float
+      attribute :price_min, Float
+      attribute :price_max, Float
       attribute :taxons, Array
       attribute :properties, Hash
       attribute :per_page, String
@@ -22,12 +22,12 @@ module Spree
 
       def retrieve_products
         from = (@page - 1) * Spree::Config.products_per_page
-        price = [price_low, price_high] if (price_low && price_high)
         Spree::Product.search(
           query: query,
           taxons: taxons,
           from: from,
-          price: price,
+          price_min: price_min,
+          price_max: price_max,
           properties: properties
         )
       end
@@ -42,8 +42,8 @@ module Spree
         @taxons = taxon ? taxon.self_and_descendants.map(&:name) : nil
         if params[:search]
           # price
-          @price_low = params[:search][:price][:min]
-          @price_high = params[:search][:price][:max]
+          @price_min = params[:search][:price][:min].to_f
+          @price_max = params[:search][:price][:max].to_f
           # properties
           @properties = params[:search][:properties]
         end

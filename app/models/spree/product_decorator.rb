@@ -5,7 +5,8 @@ module Spree
       include ::Virtus.model
 
       attribute :from, Integer, default: 0
-      attribute :price, Array
+      attribute :price_min, Float
+      attribute :price_max, Float
       attribute :properties, Hash
       attribute :query, String
       attribute :taxons, Array
@@ -37,8 +38,8 @@ module Spree
         query = q
 
         and_filter = []
-        unless price.empty?
-          and_filter << { range: { price: { gte: price[0], lte: price[1] } } }
+        if price_min && price_max && (price_min < price_max)
+          and_filter << { range: { price: { gte: price_min, lte: price_max } } }
         end
         unless @properties.nil? || @properties.empty?
           # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]} 

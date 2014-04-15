@@ -80,6 +80,31 @@ module Spree
         products.to_a[1].name.should == another_product.name
       end
 
+      it "filters products based on price" do
+        a_product.price = 1
+        a_product.index
+        another_product.price = 3
+        another_product.index
+        sleep 3 # allow some time for elasticsearch
+        products = Spree::Product.search(price_min: 2, price_max: 4)
+        products.total.should == 1
+        products.to_a[0].name.should == another_product.name
+      end
+
+      it "ignores price filter when price_min and/or price_max is nil" do
+        a_product.price = 1
+        a_product.index
+        another_product.price = 3
+        another_product.index
+        sleep 3 # allow some time for elasticsearch
+        products = Spree::Product.search(price_min: 2)
+        products.total.should == 2
+        products = Spree::Product.search(price_max: 2)
+        products.total.should == 2
+        products = Spree::Product.search(price_min: nil, price_max: nil)
+        products.total.should == 2
+      end
+
       context 'properties' do
         it "allows searching on property" do
           a_product.set_property('the_prop', 'a_value')
