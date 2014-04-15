@@ -31,6 +31,9 @@ module Spree
       end
 
       it "is set when products are searched in the index" do
+        a_product.name = "Findme"
+        a_product.index
+        sleep 3
         products = Spree::Product.search(query: a_product.name)
         products.first.elasticsearch_index.should == Spree::ElasticsearchSettings.index
       end

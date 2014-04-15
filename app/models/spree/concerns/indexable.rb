@@ -80,7 +80,7 @@ module Spree
           object_attributes = result["_source"]
           object_attributes.except!(*exclude_from_response)
           model = self.new(object_attributes)
-          model.elasticsearch_index = item["_index"]
+          model.elasticsearch_index = result["_index"]
           model.version = result["_version"]
           model
         end
