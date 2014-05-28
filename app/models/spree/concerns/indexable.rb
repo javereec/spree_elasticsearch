@@ -103,17 +103,7 @@ module Spree
           search_args[:type] = type
 
           result = client.search search_args
-
-          # Convert all results to objects using the information in the _source.
-          result_list = result["hits"]["hits"].map do |item|
-            object_attributes = item["_source"]
-            object_attributes.except!(*exclude_from_response)
-            # model = find(object_attributes["id"]) # get the record from the database
-            model = new(object_attributes) # instantiate record to avoid selection in spree_products
-            model.elasticsearch_index = item["_index"]
-            # model.version = item["_version"] # version isn't returned when using search
-            model
-          end
+          result_list = includes([:master => [:prices, :images]]).find(result["hits"]["hits"].map {|item| item["_source"]["id"] })
 
           # Convert all facets to facet objects
           facet_list = result["facets"].map do |tuple|
