@@ -39,7 +39,7 @@ module Spree
         @query = params[:keywords]
         # taxon
         taxon = params[:taxon].blank? ? nil : Spree::Taxon.find(params[:taxon])
-        @taxons = taxon ? taxon.self_and_descendants.map(&:name) : nil
+        @taxons = taxon ? taxon.permalink : nil
         if params[:search]
           # price
           @price_min = params[:search][:price][:min].to_f

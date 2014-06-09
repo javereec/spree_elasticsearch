@@ -56,7 +56,8 @@ module Spree
         # facets
         facets = {
           price: { statistical: { field: "price" } },
-          properties: { terms: { field: "properties", order: "reverse_count", size: 1000000 } } 
+          properties: { terms: { field: "properties", order: "reverse_count", size: 1000000 } },
+          taxons: { terms: { field: "taxons", size: 1000000 } }
         }
 
         # basic skeleton
@@ -111,7 +112,12 @@ module Spree
         'price' => price,
       }
       result['properties'] = product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"} unless product_properties.empty?
-      result['taxons'] = taxons.map(&:name) unless taxons.empty?
+      unless taxons.empty?
+        # in order for the term facet to be correct we should always include the parent taxon(s)
+        result['taxons'] = taxons.map do |taxon|
+          taxon.self_and_ancestors.map(&:permalink)
+        end.flatten
+      end
       # add variants information
       if variants.length > 0
         result['variants'] = []
