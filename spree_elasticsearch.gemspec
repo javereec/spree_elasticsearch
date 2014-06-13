@@ -18,7 +18,7 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'elasticsearch', '~> 1.0.0'
   s.add_dependency 'settingslogic'
-  s.add_dependency 'spree_core', '~> 2.2.0'
+  s.add_dependency 'spree_core', '~> 2.2.2'
   s.add_dependency 'virtus'
 
   s.add_development_dependency 'capybara', '~> 2.1'
