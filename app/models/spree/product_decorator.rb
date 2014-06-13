@@ -51,7 +51,7 @@ module Spree
           end
         end
 
-        sorting = [ name: { order: "asc" } ]
+        sorting = [ "name.untouched" => { order: "asc" } ]
 
         # facets
         facets = {

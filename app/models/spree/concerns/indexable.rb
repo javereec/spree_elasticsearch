@@ -103,7 +103,8 @@ module Spree
           search_args[:type] = type
 
           result = client.search search_args
-          result_list = includes([:master => [:prices, :images]]).find(result["hits"]["hits"].map {|item| item["_source"]["id"] })
+          ids = result["hits"]["hits"].map {|item| item["_source"]["id"] } # use to get the records and sort them in that order
+          result_list = includes(:translations, [:master => [:prices, :images]]).find(ids).index_by(&:id).slice(*ids).values
 
           # Convert all facets to facet objects
           facet_list = result["facets"].map do |tuple|
