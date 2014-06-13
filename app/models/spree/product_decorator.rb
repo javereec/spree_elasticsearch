@@ -20,11 +20,14 @@ module Spree
       #         query_string: { query: , fields: [] }
       #       }
       #       filter: {
-      #         terms: { taxons: [] }
+      #         and: [ 
+      #           { terms: { taxons: [] } },
+      #           { terms: { properties: [] } } 
+      #         ]
       #       }
       #     }
       #   }
-      #   filter: { and: [ { terms: { properties: [] } } ] }
+      #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
       #   from: ,
       #   size: ,
@@ -33,14 +36,11 @@ module Spree
       def to_hash
         q = { match_all: {} }
         if query # search in name and description
-          q = { query_string: { query: query, fields: ['name^5','description'], use_dis_max: true } }
+          q = { query_string: { query: query, fields: ['name^5','description'], default_operator: 'AND', use_dis_max: true } }
         end        
         query = q
 
         and_filter = []
-        if price_min && price_max && (price_min < price_max)
-          and_filter << { range: { price: { gte: price_min, lte: price_max } } }
-        end
         unless @properties.nil? || @properties.empty?
           # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]} 
           # to { terms: { properties: ["key1||value_a","key1||value_b"] }
@@ -71,11 +71,15 @@ module Spree
 
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
-        result[:query][:filtered][:filter] = { terms: { taxons: taxons } } unless taxons.empty?
+        # taxon and property filters have an effect on the facets
+        and_filter << { terms: { taxons: taxons } } unless taxons.empty?
+        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
 
-        # add price / property filter
-        result[:filter] = { "and" => and_filter } unless and_filter.empty?
-
+        # add price filter outside the query because it should have no effect on facets
+        if price_min && price_max && (price_min < price_max)
+          result[:filter] = { range: { price: { gte: price_min, lte: price_max } } }
+        end
+        
         result
       end
     end
