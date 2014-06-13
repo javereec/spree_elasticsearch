@@ -97,7 +97,7 @@ module Spree
         id: { type: 'string', index: 'not_analyzed' },
         name: {
           fields: {
-            name: { type: 'string', analyzer: 'trigrams', boost: 100 }, 
+            name: { type: 'string', analyzer: 'snowball', boost: 100 }, 
             untouched: { include_in_all: false, index: "not_analyzed", type: "string" }
           }, 
           type: "multi_field"
