@@ -27,7 +27,7 @@ module Spree
       #       }
       #     }
       #   }
-      #   filter: { and: [ { terms: { properties: [] } } ] }
+      #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
       #   from: ,
       #   size: ,
@@ -41,9 +41,6 @@ module Spree
         query = q
 
         and_filter = []
-        if price_min && price_max && (price_min < price_max)
-          and_filter << { range: { price: { gte: price_min, lte: price_max } } }
-        end
         unless @properties.nil? || @properties.empty?
           # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]}
           # to { terms: { properties: ["key1||value_a","key1||value_b"] }
@@ -74,10 +71,9 @@ module Spree
 
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
-        result[:query][:filtered][:filter] = { terms: { taxons: taxons } } unless taxons.empty?
-
-        # add price / property filter
-        result[:filter] = { "and" => and_filter } unless and_filter.empty?
+        # taxon and property filters have an effect on the facets
+        and_filter << { terms: { taxons: taxons } } unless taxons.empty?
+        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
