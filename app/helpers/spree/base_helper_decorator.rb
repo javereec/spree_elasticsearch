@@ -24,6 +24,7 @@ module Spree
       # format: Facet(name: "property_name", type: type, body: {"terms" => [{"term" => "value1", "count" => 1},{"term" => "value2", "count" => 1}]}])
       result = []
       property_names.each do |key,value|
+        value.sort_by!{|h| [-h["count"],h["term"].downcase]} # first sort on desc, then on term asc
         result << Spree::Search::Elasticsearch::Facet.new(name: key, search_name: facet.name, type: facet.type, body: {"terms" => value})
       end
       result
