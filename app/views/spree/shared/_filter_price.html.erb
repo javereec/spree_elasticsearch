@@ -7,7 +7,7 @@
     </div>
     <div class="slider-input">
       <input type="text" id="price-min" name="search[price][min]" value"<%= facet.body["min"] %>">
-      <span>tot</span>
+      <span>to</span>
       <input type="text" id="price-max" name="search[price][max]" value"<%= facet.body["max"] %>">
     </div>
   </div>
@@ -50,7 +50,7 @@
         to: max_param,
         type: 'double',
         step: 1,
-        prefix: "€",
+        prefix: "$",
         prettify: false,
         hasGrid: false,
         onLoad: function(obj) { 
