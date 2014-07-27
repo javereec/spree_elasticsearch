@@ -144,10 +144,9 @@ module Spree
     # If the product is available, index. If the product is destroyed (deleted_at attribute is set), delete from index.
     def update_index
       begin
-        if available?
+        unless deleted?
           self.index
-        end
-        if deleted?
+        else
           self.remove_from_index
         end
       rescue Elasticsearch::Transport::Transport::Errors => e
