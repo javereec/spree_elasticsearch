@@ -137,9 +137,13 @@ module Spree
       end
 
       def remove_from_index
-        client.delete id: id,
-                      type: type,
-                      index: configuration.index
+        begin
+          client.delete id: id,
+                        type: type,
+                        index: configuration.index
+        rescue Elasticsearch::Transport::Transport::Errors::NotFound => e
+          # ignore when exception is thrown because the document is not found in the index
+        end
       end
 
       def index
