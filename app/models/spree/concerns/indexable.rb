@@ -57,7 +57,7 @@ module Spree
 
       module ClassMethods
         def client
-          @client ||= Elasticsearch::Client.new log: true, hosts: configuration.hosts
+          @client ||= Elasticsearch::Client.new log: configuration.log, hosts: configuration.hosts
         end
 
         def configuration
