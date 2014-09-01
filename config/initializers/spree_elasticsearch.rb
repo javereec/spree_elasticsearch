@@ -1,0 +1,1 @@
+Spree::Config.searcher_class = Spree::Search::Elasticsearch
