@@ -16,7 +16,8 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'elasticsearch', '~> 1.0.0'
+  s.add_dependency 'elasticsearch-model'
+  s.add_dependency 'elasticsearch-rails'
   s.add_dependency 'settingslogic'
   s.add_dependency 'spree_core', '~> 2.3.0'
   s.add_dependency 'virtus'

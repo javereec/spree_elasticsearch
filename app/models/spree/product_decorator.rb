@@ -1,5 +1,48 @@
 module Spree
   Product.class_eval do
+    include Elasticsearch::Model
+    include Elasticsearch::Model::Callbacks
+
+    index_name Spree::ElasticsearchSettings.index
+    document_type 'spree_product'
+
+    mapping do
+      indexes :name, type: 'multi_field' do
+        indexes :name, type: 'string', analyzer: 'snowball', boost: 100
+        indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
+      end
+      indexes :description, analyzer: 'snowball'
+      indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :price, type: 'double'
+      indexes :sku, type: 'string', index: 'not_analyzed'
+      indexes :taxon_ids, type: 'string', index: 'not_analyzed'
+      indexes :properties, type: 'string', index: 'not_analyzed'
+    end
+
+    after_commit on: [:update] do
+      __elasticsearch__.index_document
+    end
+
+    def as_indexed_json(options={})
+      result = as_json({
+        methods: [:price, :sku],
+        only: [:available_on, :description, :name],
+        include: { 
+          variants: {
+            only: [:sku],
+            include: {
+              option_values: {
+                only: [:name, :presentation]
+              }
+            }
+          }
+        }
+      })
+      result[:properties] = property_list unless property_list.empty?
+      result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
+      result
+    end
+
     # Inner class used to query elasticsearch. The idea is that the query is dynamically build based on the parameters.
     class Product::ElasticsearchQuery
       include ::Virtus.model
@@ -57,11 +100,12 @@ module Spree
         facets = {
           price: { statistical: { field: "price" } },
           properties: { terms: { field: "properties", order: "count", size: 1000000 } },
-          taxons: { terms: { field: "taxons", size: 1000000 } }
+          taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
         }
 
         # basic skeleton
         result = {
+          min_score: 0.1,
           query: { filtered: {} },
           sort: sorting,
           from: from,
@@ -72,7 +116,7 @@ module Spree
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
         # taxon and property filters have an effect on the facets
-        and_filter << { terms: { taxons: taxons } } unless taxons.empty?
+        and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
         result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
@@ -86,74 +130,10 @@ module Spree
       end
     end
 
-    include Concerns::Indexable
+    private
 
-    # Exclude following keys when retrieving something from the Elasticsearch response.
-    def self.exclude_from_response
-      ['properties','taxons','variants']
-    end
-
-    # Used at startup when creating or updating the index with all type mappings
-    def self.type_mapping
-      {
-        id: { type: 'string', index: 'not_analyzed' },
-        name: {
-          fields: {
-            name: { type: 'string', analyzer: 'snowball', boost: 100 },
-            untouched: { include_in_all: false, index: "not_analyzed", type: "string" }
-          },
-          type: "multi_field"
-        },
-        description: { type: 'string', analyzer: 'snowball' },
-        available_on: { type: 'date', format: 'dateOptionalTime', include_in_all: false },
-        updated_at: { type: 'date', format: 'dateOptionalTime', include_in_all: false },
-        price: { type: 'double' },
-        properties: { type: 'string', index: 'not_analyzed' },
-        sku: { type: 'string', index: 'not_analyzed' },
-        taxons: { type: 'string', index: 'not_analyzed' }
-      }
-    end
-
-    # Used when creating or updating a document in the index
-    def to_hash
-      result = {
-        'id' => id,
-        'name' => name,
-        'description' => description,
-        'available_on' => available_on,
-        'updated_at' => updated_at,
-        'price' => price,
-      }
-      result['sku'] = sku unless sku.try(:empty?)
-      result['properties'] = product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"} unless product_properties.empty?
-      unless taxons.empty?
-        # in order for the term facet to be correct we should always include the parent taxon(s)
-        result['taxons'] = taxons.map do |taxon|
-          taxon.self_and_ancestors.map(&:permalink)
-        end.flatten
-      end
-      # add variants information
-      if variants.length > 0
-        result['variants'] = []
-        variants.each do |variant|
-          result['variants'] << variant.attributes
-        end
-      end
-      result
-    end
-
-    # Override from concern for better control.
-    # If the product is available, index. If the product is destroyed (deleted_at attribute is set), delete from index.
-    def update_index
-      begin
-        unless deleted?
-          self.index
-        else
-          self.remove_from_index
-        end
-      rescue Elasticsearch::Transport::Transport::Errors => e
-        Rails.logger.error e
-      end
+    def property_list
+      product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"}
     end
   end
 end

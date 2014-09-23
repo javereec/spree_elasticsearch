@@ -22,14 +22,17 @@ module Spree
 
       def retrieve_products
         from = (@page - 1) * Spree::Config.products_per_page
-        Spree::Product.search(
-          query: query,
-          taxons: taxons,
-          from: from,
-          price_min: price_min,
-          price_max: price_max,
-          properties: properties
+        search_result = Spree::Product.__elasticsearch__.search(
+          Spree::Product::ElasticsearchQuery.new(
+            query: query,
+            taxons: taxons,
+            from: from,
+            price_min: price_min,
+            price_max: price_max,
+            properties: properties
+          ).to_hash
         )
+        search_result.page(page).records
       end
 
       protected
@@ -37,9 +40,7 @@ module Spree
       # converts params to instance variables
       def prepare(params)
         @query = params[:keywords]
-        # taxon
-        taxon = params[:taxon].blank? ? nil : Spree::Taxon.find(params[:taxon])
-        @taxons = taxon ? taxon.permalink : nil
+        @taxons = params[:taxon]
         if params[:search]
           # price
           @price_min = params[:search][:price][:min].to_f
