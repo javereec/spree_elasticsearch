@@ -1,7 +1,6 @@
 module Spree
   Product.class_eval do
     include Elasticsearch::Model
-    include Elasticsearch::Model::Callbacks
 
     index_name Spree::ElasticsearchSettings.index
     document_type 'spree_product'
