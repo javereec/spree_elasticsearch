@@ -18,10 +18,6 @@ module Spree
       indexes :properties, type: 'string', index: 'not_analyzed'
     end
 
-    after_commit on: [:update] do
-      __elasticsearch__.index_document
-    end
-
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
