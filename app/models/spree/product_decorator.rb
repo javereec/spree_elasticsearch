@@ -22,7 +22,7 @@ module Spree
       result = as_json({
         methods: [:price, :sku],
         only: [:available_on, :description, :name],
-        include: { 
+        include: {
           variants: {
             only: [:sku],
             include: {
@@ -73,7 +73,7 @@ module Spree
       # }
       def to_hash
         q = { match_all: {} }
-        if query
+        unless query.blank? # nil or empty
           q = { query_string: { query: query, fields: ['name^5','description','sku'], default_operator: 'AND', use_dis_max: true } }
         end
         query = q
