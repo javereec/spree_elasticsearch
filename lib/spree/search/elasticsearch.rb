@@ -11,7 +11,7 @@ module Spree
       attribute :price_min, Float
       attribute :price_max, Float
       attribute :taxons, Array
-      attribute :browse_mode, Boolean
+      attribute :browse_mode, Boolean, default: true
       attribute :properties, Hash
       attribute :per_page, String
       attribute :page, String
@@ -43,7 +43,7 @@ module Spree
       def prepare(params)
         @query = params[:keywords]
         @taxons = params[:taxon]
-        @browse_mode = params[:browse_mode] || true
+        @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
         if params[:search]
           # price
           @price_min = params[:search][:price][:min].to_f
