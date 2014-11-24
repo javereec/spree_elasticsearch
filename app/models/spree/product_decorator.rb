@@ -48,6 +48,10 @@ module Spree
       attribute :properties, Hash
       attribute :query, String
       attribute :taxons, Array
+      attribute :browse_mode, Boolean
+
+      # When browse_mode is enabled, the taxon filter is placed at top level. This causes the results to be limited, but facetting is done on the complete dataset.
+      # When browse_mode is disabled, the taxon filter is placed inside the filtered query. This causes the facets to be limited to the resulting set.
 
       # Method that creates the actual query based on the current attributes.
       # The idea is to always to use the following schema and fill in the blanks.
