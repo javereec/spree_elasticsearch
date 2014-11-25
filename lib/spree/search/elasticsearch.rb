@@ -15,6 +15,7 @@ module Spree
       attribute :properties, Hash
       attribute :per_page, String
       attribute :page, String
+      attribute :sorting, String
 
       def initialize(params)
         self.current_currency = Spree::Config[:currency]
@@ -31,7 +32,8 @@ module Spree
             from: from,
             price_min: price_min,
             price_max: price_max,
-            properties: properties
+            properties: properties,
+            sorting: sorting
           ).to_hash
         )
         search_result.page(page).records
@@ -42,6 +44,7 @@ module Spree
       # converts params to instance variables
       def prepare(params)
         @query = params[:keywords]
+        @sorting = params[:sorting]
         @taxons = params[:taxon]
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
         if params[:search]

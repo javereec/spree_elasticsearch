@@ -49,6 +49,7 @@ module Spree
       attribute :query, String
       attribute :taxons, Array
       attribute :browse_mode, Boolean
+      attribute :sorting, String
 
       # When browse_mode is enabled, the taxon filter is placed at top level. This causes the results to be limited, but facetting is done on the complete dataset.
       # When browse_mode is disabled, the taxon filter is placed inside the filtered query. This causes the facets to be limited to the resulting set.
@@ -93,7 +94,20 @@ module Spree
           end
         end
 
-        sorting = [ "name.untouched" => { order: "asc" } ]
+        sorting = case @sorting
+        when "name_asc"
+          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
+        when "name_desc"
+          [ {"name.untouched" => { order: "desc" }}, {"price" => { order: "asc" }}, "_score" ]
+        when "price_asc"
+          [ {"price" => { order: "asc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
+        when "price_desc"
+          [ {"price" => { order: "desc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
+        when "score"
+          [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
+        else
+          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
+        end
 
         # facets
         facets = {
