@@ -23,7 +23,19 @@ bundle
 bundle exec rails g spree_elasticsearch:install
 ```
 
-Edit the file in `config\elasticsearch.yml` to match your configuration.
+Edit/create the file in `config\elasticsearch.yml` to match your configuration.
+
+Create a decorator for Product model to implement callbacks and update the index. Check the [elasticsearch-rails](https://github.com/elasticsearch/elasticsearch-rails/tree/master/elasticsearch-model#updating-the-documents-in-the-index) documentation for different options.
+
+For example using the model callbacks
+
+```ruby
+module Spree
+  Product.class_eval do
+    include Elasticsearch::Model::Callbacks  
+  end
+end
+```
 
 ### Elasticsearch
 
