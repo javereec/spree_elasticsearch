@@ -73,7 +73,6 @@ module Spree
       #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
       #   from: ,
-      #   size: ,
       #   facets:
       # }
       def to_hash
@@ -122,7 +121,6 @@ module Spree
           query: { filtered: {} },
           sort: sorting,
           from: from,
-          size: Spree::Config.products_per_page,
           facets: facets
         }
 
