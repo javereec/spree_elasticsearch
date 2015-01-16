@@ -3,7 +3,7 @@
     <% params[:search] ||= {} %>
     <%= hidden_field_tag 'per_page', params[:per_page] %>
     <% facets = process_facets(@products.response.response['facets']) %>
-    <%= select_tag "search[sorting]", options_for_select({Spree.t("search_sorting.name_asc") => "name_asc", Spree.t("search_sorting.name_desc") => "name_desc", Spree.t("search_sorting.price_asc") => "price_asc", Spree.t("search_sorting.price_desc") => "price_desc", Spree.t("search_sorting.relevancy") => "score"}, params[:search][:sorting]), :onchange => "this.form.submit();" %>
+    <%= select_tag "sorting", options_for_select({Spree.t("search_sorting.name_asc") => "name_asc", Spree.t("search_sorting.name_desc") => "name_desc", Spree.t("search_sorting.price_asc") => "price_asc", Spree.t("search_sorting.price_desc") => "price_desc", Spree.t("search_sorting.relevancy") => "score"}, params[:sorting]), :onchange => "this.form.submit();" %>
     <%= render :partial => 'spree/shared/filter_price', :locals => { :facet => facets['price'] } %>
     <%= render :partial => 'spree/shared/filter_properties', :locals => { :facets => facets.select {|key,facet| ((key != "price") && (key != "taxon_ids")) && (facet['_type'] == 'terms')} || [] } %>
     <%= submit_tag Spree.t(:search), :name => nil %>

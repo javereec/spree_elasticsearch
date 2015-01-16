@@ -45,9 +45,9 @@ module Spree
       def prepare(params)
         @query = params[:keywords]
         @sorting = params[:sorting]
-        @taxons = params[:taxon]
+        @taxons = params[:taxon] unless params[:taxons].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
-        if params[:search]
+        if params[:search] && params[:search][:price]
           # price
           @price_min = params[:search][:price][:min].to_f
           @price_max = params[:search][:price][:max].to_f

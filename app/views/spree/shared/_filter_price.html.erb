@@ -6,9 +6,9 @@
       <input type="text" id="price" />
     </div>
     <div class="slider-input">
-      <input type="text" id="price-min" name="search[price][min]" value"<%= facet.body["min"] %>">
+      <input type="text" id="price-min" name="search[price][min]" value"<%= facet["min"] %>">
       <span>tot</span>
-      <input type="text" id="price-max" name="search[price][max]" value"<%= facet.body["max"] %>">
+      <input type="text" id="price-max" name="search[price][max]" value"<%= facet["max"] %>">
     </div>
   </div>
 </fieldset>
@@ -30,8 +30,8 @@
         });
       });
 
-      minimum = <%= (facet.body["min"] == facet.body["max"] ? (facet.body["min"] - 1) : facet.body["min"]).floor %>;
-      maximum = <%= (facet.body["max"] == facet.body["min"] ? (facet.body["min"] + 1) : facet.body["max"]).ceil %>;
+      minimum = <%= (facet["min"] == facet["max"] ? (facet["min"] - 1) : facet["min"]).floor %>;
+      maximum = <%= (facet["max"] == facet["min"] ? (facet["min"] + 1) : facet["max"]).ceil %>;
       min_param = minimum;
       <% if params[:search] && params[:search][:price] %>
         min_param = <%= params[:search][:price][:min] %>
