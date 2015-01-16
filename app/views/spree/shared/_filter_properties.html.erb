@@ -1,15 +1,15 @@
-<% facets.each do |facet| %>
+<% facets.each do |facet_name, facet| %>
   <fieldset class="facet">
-    <h4 class="filter"><%= facet.name %></h4>
+    <h4 class="filter"><%= facet_name %></h4>
     <div class="facet-box">
       <ul class="filter_choices unstyled">
-        <% facet.body["terms"].each do |term| %>
+        <% facet["terms"].each do |term| %>
         <li class="nowrap">
           <input type="checkbox"
                  id="<%= term["term"] %>"
-                 name="search[properties][<%= facet.name %>][]"
+                 name="search[properties][<%= facet_name %>][]"
                  value="<%= term["term"] %>"
-                 <%= params[:search][:properties] && params[:search][:properties][facet.name] && params[:search][:properties][facet.name].include?(term["term"]) ? "checked" : "" %> />
+                 <%= params[:search][:properties] && params[:search][:properties][facet_name] && params[:search][:properties][facet_name].include?(term["term"]) ? "checked" : "" %> />
           <label class="nowrap" for="<%= term["term"] %>"> <%= term["term"] %> (<%= term["count"] %>)</label>
         </li>
         <% end %>

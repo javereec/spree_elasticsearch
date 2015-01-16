@@ -11,6 +11,12 @@ module SpreeElasticsearch
       g.test_framework :rspec
     end
 
+    initializer "spree.assets.precompile", group: :all do |app|
+      app.config.assets.precompile += %w[
+        sprite-skin-flat.png
+      ]
+    end
+
     def self.activate
       Dir.glob(File.join(File.dirname(__FILE__), '../../app/**/*_decorator*.rb')) do |c|
         Rails.configuration.cache_classes ? require(c) : load(c)
