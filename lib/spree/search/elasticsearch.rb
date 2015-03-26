@@ -47,10 +47,12 @@ module Spree
         @sorting = params[:sorting]
         @taxons = params[:taxon] unless params[:taxon].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
-        if params[:search] && params[:search][:price]
+        if params[:search]
           # price
-          @price_min = params[:search][:price][:min].to_f
-          @price_max = params[:search][:price][:max].to_f
+          if params[:search][:price]
+            @price_min = params[:search][:price][:min].to_f
+            @price_max = params[:search][:price][:max].to_f
+          end
           # properties
           @properties = params[:search][:properties]
         end
