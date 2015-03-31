@@ -42,7 +42,6 @@ module Spree
     class Product::ElasticsearchQuery
       include ::Virtus.model
 
-      attribute :from, Integer, default: 0
       attribute :price_min, Float
       attribute :price_max, Float
       attribute :properties, Hash
@@ -72,7 +71,6 @@ module Spree
       #   }
       #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
-      #   from: ,
       #   facets:
       # }
       def to_hash
@@ -120,7 +118,6 @@ module Spree
           min_score: 0.1,
           query: { filtered: {} },
           sort: sorting,
-          from: from,
           facets: facets
         }
 
