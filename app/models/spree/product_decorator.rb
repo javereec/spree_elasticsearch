@@ -78,7 +78,7 @@ module Spree
       #   }
       #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
-      #   facets:
+      #   aggs:
       # }
       def to_hash
         q = { match_all: {} }
@@ -111,10 +111,10 @@ module Spree
         end
 
         # facets
-        facets = {
-          price: { statistical: { field: "price" } },
-          merchant: { terms: { field: "properties.merchant", order: "count", size: 1000000 } },
-          brand: { terms: { field: "properties.brand", order: "count", size: 1000000 } },
+        aggs = {
+          price: { stats: { field: "price" } },
+          merchant: { terms: { field: "properties.merchant", size: 1000000 } },
+          brand: { terms: { field: "properties.brand", size: 1000000 } },
           taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
         }
 
@@ -123,7 +123,7 @@ module Spree
           min_score: 0.1,
           query: { filtered: {} },
           sort: sorting,
-          facets: facets
+          aggs: aggs
         }
 
         # add query and filters to filtered
