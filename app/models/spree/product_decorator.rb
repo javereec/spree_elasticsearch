@@ -23,6 +23,7 @@ module Spree
         indexes :color, type: 'string', index: 'not_analyzed'
         # .. other fields will be dynamically indexed
       end
+      indexes :created_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
     end
 
     def as_indexed_json(options={})
@@ -97,17 +98,19 @@ module Spree
 
         sorting = case @sorting
         when "name_asc"
-          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
+          [ {"name.untouched" => { order: "asc" }}, {price: { order: "asc" }}, "_score" ]
         when "name_desc"
-          [ {"name.untouched" => { order: "desc" }}, {"price" => { order: "asc" }}, "_score" ]
+          [ {"name.untouched" => { order: "desc" }}, {price: { order: "asc" }}, "_score" ]
         when "price_asc"
-          [ {"price" => { order: "asc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
+          [ {price: { order: "asc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
         when "price_desc"
-          [ {"price" => { order: "desc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
+          [ {price: { order: "desc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
+        when "newest"
+          [ {created_at: {order: "desc" }}, "_score" ]
         when "score"
           [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
-        else
-          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
+        else # same as newest
+          [ {created_at: {order: "desc" }}, "_score" ]
         end
 
         # facets
