@@ -1,6 +1,6 @@
 namespace :spree_elasticsearch do
-  desc "Load all products into the index."
-  task :load_products => :environment do
+  desc "Create Elasticsearch index."
+  task :create_index => :environment do
     unless Elasticsearch::Model.client.indices.exists index: Spree::ElasticsearchSettings.index
       Elasticsearch::Model.client.indices.create \
         index: Spree::ElasticsearchSettings.index,
@@ -26,6 +26,5 @@ namespace :spree_elasticsearch do
                     token_chars: ["letter", "digit", "punctuation", "symbol"] }}}},
           mappings: Spree::Product.mappings.to_hash }
     end
-    Spree::Product.__elasticsearch__.import
   end
 end
