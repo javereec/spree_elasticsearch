@@ -30,7 +30,7 @@ module Spree
             browse_mode: browse_mode,
             price_min: price_min,
             price_max: price_max,
-            properties: properties,
+            properties: properties || {},
             sorting: sorting
           ).to_hash
         )

@@ -53,7 +53,7 @@ module Spree
 
       attribute :price_min, Float
       attribute :price_max, Float
-      attribute :properties, Hash
+      attribute :properties, Hash, default: {}
       attribute :query, String
       attribute :taxons, Array
       attribute :browse_mode, Boolean
