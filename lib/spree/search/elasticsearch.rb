@@ -23,7 +23,7 @@ module Spree
       end
 
       def retrieve_products
-        search_result = Spree::Product.__elasticsearch__.search(
+        @search_result = Spree::Product.__elasticsearch__.search(
           Spree::Product::ElasticsearchQuery.new(
             query: query,
             taxons: taxons,
@@ -34,7 +34,7 @@ module Spree
             sorting: sorting
           ).to_hash
         )
-        search_result.limit(per_page).page(page).records
+        @search_result.limit(per_page).page(page).records
       end
 
       protected

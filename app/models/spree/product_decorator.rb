@@ -15,7 +15,14 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
-      indexes :properties, type: 'string', index: 'not_analyzed'
+
+      # TODO: make properties top level?
+      indexes :properties, type: 'object', index: 'not_analyzed' do
+        indexes :merchant, type: 'string', index: 'not_analyzed'
+        indexes :brand, type: 'string', index: 'not_analyzed'
+        indexes :color, type: 'string', index: 'not_analyzed'
+        # .. other fields will be dynamically indexed
+      end
     end
 
     def as_indexed_json(options={})
@@ -33,7 +40,7 @@ module Spree
           }
         }
       })
-      result[:properties] = property_list unless property_list.empty?
+      result[:properties] = Hash[product_properties.map{ |pp| [pp.property.name, pp.value] }]
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
       result
     end
@@ -81,14 +88,11 @@ module Spree
         query = q
 
         and_filter = []
-        unless @properties.nil? || @properties.empty?
-          # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]}
-          # to { terms: { properties: ["key1||value_a","key1||value_b"] }
-          #    { terms: { properties: ["key2||value_a"] }
-          # This enforces "and" relation between different property values and "or" relation between same property values
-          properties = @properties.map {|k,v| [k].product(v)}.map do |pair|
-            and_filter << { terms: { properties: pair.map {|prop| prop.join("||")} } }
-          end
+        # transform:
+        # key: [val, val] -> {terms: properties.key: [val, val] }
+        #                    {terms: properties.key: [val] }
+        @properties.each do |key, val|
+          and_filter << { terms: { "properties.#{key}" => val } }
         end
 
         sorting = case @sorting
@@ -109,7 +113,8 @@ module Spree
         # facets
         facets = {
           price: { statistical: { field: "price" } },
-          properties: { terms: { field: "properties", order: "count", size: 1000000 } },
+          merchant: { terms: { field: "properties.merchant", order: "count", size: 1000000 } },
+          brand: { terms: { field: "properties.brand", order: "count", size: 1000000 } },
           taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
         }
 
@@ -136,12 +141,6 @@ module Spree
 
         result
       end
-    end
-
-    private
-
-    def property_list
-      product_properties.map{|pp| "#{pp.property.name}||#{pp.value}"}
     end
   end
 end
