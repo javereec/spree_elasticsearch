@@ -24,12 +24,13 @@ module Spree
         # .. other fields will be dynamically indexed
       end
       indexes :created_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :out_of_date_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
     end
 
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name],
+        only: [:available_on, :description, :name, :out_of_date_at],
         include: {
           variants: {
             only: [:sku],
@@ -135,7 +136,8 @@ module Spree
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
-        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
+        and_filter << { missing: { field: :out_of_date_at } }
+        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
