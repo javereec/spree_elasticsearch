@@ -117,9 +117,9 @@ module Spree
         # facets
         aggs = {
           price: { stats: { field: "price" } },
-          merchant: { terms: { field: "properties.merchant", size: 1000000 } },
-          brand: { terms: { field: "properties.brand", size: 1000000 } },
-          taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
+          merchant: { terms: { field: "properties.merchant", size: 0 } },
+          brand: { terms: { field: "properties.brand", size: 0 } },
+          taxon_ids: { terms: { field: "taxon_ids", size: 0 } }
         }
 
         # basic skeleton
