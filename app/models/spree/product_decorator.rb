@@ -134,15 +134,12 @@ module Spree
         result[:query][:filtered][:query] = query
         # taxon and property filters have an effect on the facets
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
+        # filter by price
+        and_filter << { range: { price: { gte: price_min, lte: price_max } } }
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
         and_filter << { missing: { field: :out_of_date_at } }
         result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
-
-        # add price filter outside the query because it should have no effect on facets
-        if price_min && price_max && (price_min < price_max)
-          result[:filter] = { range: { price: { gte: price_min, lte: price_max } } }
-        end
 
         result
       end
