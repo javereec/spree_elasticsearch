@@ -23,7 +23,15 @@ bundle
 bundle exec rails g spree_elasticsearch:install
 ```
 
-Edit/create the file in `config\elasticsearch.yml` to match your configuration.
+Edit/create the file in `config/elasticsearch.yml` to match your configuration.
+
+Edit the spree initializer in `config/initializers/spree.rb` and use the elasticsearch searcher.
+
+```ruby
+Spree.config do |config|
+  config.searcher_class = Spree::Search::Elasticsearch
+end
+```
 
 Create a decorator for Product model to implement callbacks and update the index. Check the [elasticsearch-rails](https://github.com/elasticsearch/elasticsearch-rails/tree/master/elasticsearch-model#updating-the-documents-in-the-index) documentation for different options.
 
