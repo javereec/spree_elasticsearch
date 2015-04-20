@@ -30,7 +30,7 @@ module Spree
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name, :out_of_date_at],
+        only: [:available_on, :description, :name, :out_of_date_at, :deleted_at],
         include: {
           variants: {
             only: [:sku],
@@ -139,6 +139,7 @@ module Spree
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
         and_filter << { missing: { field: :out_of_date_at } }
+        and_filter << { missing: { field: :deleted_at } }
         result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         result
