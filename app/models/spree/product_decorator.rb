@@ -44,6 +44,7 @@ module Spree
       })
       result[:properties] = Hash[product_properties.map{ |pp| [pp.property.name, pp.value] }]
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
+      result[:image_url] = images.first.attachment.url unless images.empty?
       result
     end
 
@@ -140,6 +141,8 @@ module Spree
         and_filter << { range: { available_on: { lte: "now" } } }
         and_filter << { missing: { field: :out_of_date_at } }
         and_filter << { missing: { field: :deleted_at } }
+        # and have an image
+        and_filter << { exists: { field: :image_url } }
         result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         result
