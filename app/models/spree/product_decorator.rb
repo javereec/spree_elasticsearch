@@ -30,7 +30,7 @@ module Spree
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name, :out_of_date_at, :deleted_at],
+        only: [:available_on, :description, :name, :out_of_date_at, :created_at, :deleted_at],
         include: {
           variants: {
             only: [:sku],
