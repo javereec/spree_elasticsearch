@@ -24,6 +24,7 @@ module Spree
         # .. other fields will be dynamically indexed
       end
       indexes :created_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :deleted_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :out_of_date_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
     end
 
