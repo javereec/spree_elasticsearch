@@ -10,14 +10,17 @@ namespace :spree_elasticsearch do
               analyzer: {
                  nGram_analyzer: {
                     type: "custom",
-                    filter: ["lowercase", "asciifolding", "nGram_filter"],
+                    filter: ["lowercase", "asciifolding", "synonym", "ngram"],
                     tokenizer: "whitespace" },
                  whitespace_analyzer: {
                     type: "custom",
                     filter: ["lowercase", "asciifolding"],
                     tokenizer: "whitespace" }},
               filter: {
-                 nGram_filter: {
+                synonym: {
+                    type: "synonym",
+                    synonyms_path: "analysis/synonyms.txt" },
+                 ngram: {
                     max_gram: "20",
                     min_gram: "3",
                     type: "nGram",
