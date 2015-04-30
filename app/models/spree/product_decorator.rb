@@ -47,7 +47,7 @@ module Spree
       })
       result[:properties] = Hash[product_properties.map{ |pp| [pp.property.name, pp.value] }]
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
-      result[:position] = Hash[Spree::Product.first.classifications.map {|c| [c.taxon_id, c.position]}]
+      result[:position] = Hash[classifications.map {|c| [c.taxon_id, c.position]}]
       result[:image_url] = images.first.attachment.url unless images.empty?
       result
     end
