@@ -116,7 +116,7 @@ module Spree
         when "score"
           [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
         when "recommended"
-          [ {"position.#{taxons.first}": { order: "asc", ignore_unmapped: true }}, {created_at: {order: "desc" }}, "_score" ]
+          [ {"position.#{taxons.first}" => { order: "asc", ignore_unmapped: true }}, {created_at: {order: "desc" }}, "_score" ]
         else # same as newest
           [ {created_at: {order: "desc" }}, "_score" ]
         end
