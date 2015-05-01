@@ -5,9 +5,10 @@ module Spree
     index_name Spree::ElasticsearchSettings.index
     document_type 'spree_product'
 
-    mapping _all: {"index_analyzer" => "nGram_analyzer", "search_analyzer" => "whitespace_analyzer"} do
+    mapping _all: {"index_analyzer" => "search_analyzer", "search_analyzer" => "whitespace_analyzer"} do
       indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
+        indexes :name, type: 'string', analyzer: 'search_analyzer', boost: 100
+        indexes :autocomplete, type: 'string', analyzer: 'ngram_analyzer', boost: 100
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
       indexes :description, analyzer: 'snowball'
@@ -15,6 +16,7 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
+      indexes :image_url, type: 'string', index: 'not_analyzed', include_in_all: false
 
       indexes :position, type: 'object', index: 'not_analyzed'
 

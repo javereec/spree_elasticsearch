@@ -8,7 +8,11 @@ namespace :spree_elasticsearch do
           settings: {
             analysis: {
               analyzer: {
-                 nGram_analyzer: {
+                 search_analyzer: {
+                   type: "custom",
+                   filter: [ "standard", "lowercase", "asciifolding", "stop", "synonym", "kstem"],
+                   tokenizer: "standard" },
+                 ngram_analyzer: {
                     type: "custom",
                     filter: ["lowercase", "asciifolding", "synonym", "ngram"],
                     tokenizer: "whitespace" },
