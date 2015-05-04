@@ -49,7 +49,7 @@ module Spree
 
         LUCENE_BOOLEANS = /\b(AND|OR|NOT)\b/
 
-        def escape(s)
+        def self.escape(s)
           # 6 slashes =>
           #  ruby reads it as 3 backslashes =>
           #    the first 2 =>
