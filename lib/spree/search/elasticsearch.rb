@@ -67,7 +67,7 @@ module Spree
 
       # converts params to instance variables
       def prepare(params)
-        @query = Escaping.escape(params[:keywords])
+        @query = Escaping.escape(params[:keywords] || "")
         @sorting = params[:sorting]
         @taxons = params[:taxon] unless params[:taxon].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
