@@ -145,8 +145,8 @@ module Spree
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # filter by price
         price = {}
-        price[:gte] = price_min if price_min > 0
-        price[:lte] = price_max if price_max > 0
+        price[:gte] = price_min if !price_min.nil? && price_min > 0
+        price[:lte] = price_max if !price_max.nil? && price_max > 0
         and_filter << { range: { price: price } } unless price.empty?
         and_filter << { range: { price: { gte: price_min, lte: price_max } } }
         # only return products that are available

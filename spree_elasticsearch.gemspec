@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_elasticsearch'
-  s.version     = '2.4.1'
+  s.version     = '2.4.2'
   s.summary     = 'Add searching capabilities via Elasticsearch'
   s.description = s.summary
   s.required_ruby_version = '>= 1.9.3'
