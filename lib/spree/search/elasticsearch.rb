@@ -12,6 +12,7 @@ module Spree
       attribute :price_max, Float
       attribute :taxon, String
       attribute :taxons, Hash
+      attribute :option_types, Hash
       attribute :browse_mode, Boolean, default: true
       attribute :properties, Hash
       attribute :per_page, String
@@ -30,6 +31,7 @@ module Spree
             query: query,
             taxon: taxon,
             taxons: taxons,
+            option_types: option_types,
             browse_mode: browse_mode,
             from: from,
             price_min: price_min,
@@ -49,6 +51,7 @@ module Spree
         @sorting = params[:sorting]
         @taxon = params[:taxon] unless params[:taxon].nil?
         @taxons = params[:taxons] unless params[:taxons].nil?
+        @option_types = params[:option_types] unless params[:option_types].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
         if params[:search] && params[:search][:price]
           # price

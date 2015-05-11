@@ -56,6 +56,7 @@ module Spree
       attribute :query, String
       attribute :taxon, String
       attribute :taxons, Hash
+      attribute :option_types, Hash
       attribute :browse_mode, Boolean
       attribute :sorting, String
 
@@ -144,7 +145,13 @@ module Spree
           }
         end
 
-        # taxon and property filters have an effect on the facets
+        # option_type, taxon and property filters have an effect on the facets
+        if option_types.present?
+          option_types.each do |option_type_id, option_value_ids|
+            and_filter << {bool: {must: [{ term: { "variants.option_values.id" => option_value_ids }}]}}
+          end
+        end
+
         if taxons.present?
           taxons.each do |taxonomy_id, taxon_ids|
             and_filter << {bool: {must: [{ term: { taxon_ids: taxon_ids }}]}}
