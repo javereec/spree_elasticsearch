@@ -129,7 +129,8 @@ module Spree
           query: { filtered: {} },
           sort: sorting,
           from: from,
-          facets: facets
+          facets: facets,
+          fields: ["_id"]
         }
 
         # add query and filters to filtered
