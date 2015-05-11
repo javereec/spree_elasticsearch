@@ -18,8 +18,6 @@ module Spree
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
       indexes :image_url, type: 'string', index: 'not_analyzed', include_in_all: false
 
-      indexes :position, type: 'object', index: 'not_analyzed'
-
       # TODO: make properties top level?
       indexes :properties, type: 'object', index: 'not_analyzed' do
         indexes :merchant, type: 'string', index: 'not_analyzed'
@@ -51,7 +49,6 @@ module Spree
       })
       result[:properties] = Hash[product_properties.map{ |pp| [pp.property.name, pp.value] }]
       result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
-      result[:position] = Hash[classifications.map {|c| [c.taxon_id, c.position]}]
       result[:image_url] = images.first.attachment.url unless images.empty?
       result
     end
