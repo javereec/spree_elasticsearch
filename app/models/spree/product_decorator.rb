@@ -30,12 +30,14 @@ module Spree
       indexes :created_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :deleted_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :out_of_date_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :popularity_score
+      indexes :trending_score
     end
 
     def as_indexed_json(options={})
       result = as_json({
         methods: [:price, :sku],
-        only: [:available_on, :description, :name, :out_of_date_at, :created_at, :deleted_at],
+        only: [:available_on, :description, :name, :out_of_date_at, :created_at, :deleted_at, :popularity_score, :trending_score],
         include: {
           variants: {
             only: [:sku],
@@ -114,13 +116,13 @@ module Spree
         when "price_desc"
           [ {price: { order: "desc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
         when "newest"
-          [ {created_at: {order: "desc" }}, "_score" ]
+          [ {trending_score: {order: "desc" }}, "_score" ]
         when "score"
           [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
         when "recommended"
-          [ {"position.#{taxons.first}" => { order: "asc", ignore_unmapped: true }}, {created_at: {order: "desc" }}, "_score" ]
+          [ {popularity_score: {order: "desc" }}, "_score" ]
         else # same as newest
-          [ {created_at: {order: "desc" }}, "_score" ]
+          [ {trending_score: {order: "desc" }}, "_score" ]
         end
 
         # facets
