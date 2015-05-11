@@ -15,6 +15,7 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
+      indexes :taxon_names, analyzer: 'snowball'
       indexes :properties, type: 'string', index: 'not_analyzed'
     end
 
@@ -34,7 +35,13 @@ module Spree
         }
       })
       result[:properties] = property_list unless property_list.empty?
-      result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
+
+      if taxons.present?
+        taxon_with_children = taxons.map(&:self_and_ancestors).flatten.uniq
+
+        result[:taxon_ids] = taxon_with_children.map(&:id)
+        result[:taxon_names] = taxon_with_children.map(&:name)
+      end
       result
     end
 
