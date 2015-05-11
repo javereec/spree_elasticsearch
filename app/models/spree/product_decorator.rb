@@ -139,7 +139,7 @@ module Spree
         if taxon.present?
           and_filter << {
             bool: {
-              should: [{term: {taxon_ids: taxon}}]
+              must: [{term: {taxon_ids: taxon}}]
             }
           }
         end
@@ -147,7 +147,7 @@ module Spree
         # taxon and property filters have an effect on the facets
         if taxons.present?
           taxons.each do |taxonomy_id, taxon_ids|
-            and_filter << {bool: {should: [{ term: { taxon_ids: taxon_ids }}]}}
+            and_filter << {bool: {must: [{ term: { taxon_ids: taxon_ids }}]}}
           end
         end
 
