@@ -10,7 +10,8 @@ module Spree
       attribute :query, String
       attribute :price_min, Float
       attribute :price_max, Float
-      attribute :taxons, Array
+      attribute :taxon, String
+      attribute :taxons, Hash
       attribute :browse_mode, Boolean, default: true
       attribute :properties, Hash
       attribute :per_page, String
@@ -27,6 +28,7 @@ module Spree
         search_result = Spree::Product.__elasticsearch__.search(
           Spree::Product::ElasticsearchQuery.new(
             query: query,
+            taxon: taxon,
             taxons: taxons,
             browse_mode: browse_mode,
             from: from,
@@ -45,7 +47,8 @@ module Spree
       def prepare(params)
         @query = params[:keywords]
         @sorting = params[:sorting]
-        @taxons = params[:taxon] unless params[:taxon].nil?
+        @taxon = params[:taxon] unless params[:taxon].nil?
+        @taxons = params[:taxons] unless params[:taxons].nil?
         @browse_mode = params[:browse_mode] unless params[:browse_mode].nil?
         if params[:search] && params[:search][:price]
           # price

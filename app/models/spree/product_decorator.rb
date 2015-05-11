@@ -54,7 +54,8 @@ module Spree
       attribute :price_max, Float
       attribute :properties, Hash
       attribute :query, String
-      attribute :taxons, Array
+      attribute :taxon, String
+      attribute :taxons, Hash
       attribute :browse_mode, Boolean
       attribute :sorting, String
 
@@ -134,10 +135,18 @@ module Spree
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
 
+        if taxon.present?
+          and_filter << {
+            bool: {
+              should: [{term: {taxon_ids: taxon}}]
+            }
+          }
+        end
+
         # taxon and property filters have an effect on the facets
         if taxons.present?
-          taxons.each do |taxon|
-            and_filter << {bool: {should: [{ term: { taxon_ids: taxon }}]}}
+          taxons.each do |taxonomy_id, taxon_ids|
+            and_filter << {bool: {should: [{ term: { taxon_ids: taxon_ids }}]}}
           end
         end
 
