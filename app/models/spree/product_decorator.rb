@@ -28,7 +28,7 @@ module Spree
             only: [:sku],
             include: {
               option_values: {
-                only: [:name, :presentation]
+                only: [:id, :name, :presentation]
               }
             }
           }
