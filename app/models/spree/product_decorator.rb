@@ -30,8 +30,8 @@ module Spree
       indexes :created_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :deleted_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :out_of_date_at, type: 'date', format: 'dateOptionalTime', include_in_all: false
-      indexes :popularity_score
-      indexes :trending_score
+      indexes :popularity_score, type: 'integer'
+      indexes :trending_score, type: 'integer'
     end
 
     def as_indexed_json(options={})
