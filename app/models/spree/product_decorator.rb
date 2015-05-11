@@ -137,7 +137,7 @@ module Spree
         # taxon and property filters have an effect on the facets
         if taxons.present?
           taxons.each do |taxon|
-            and_filter << {bool: {must: [{ terms: { taxon_ids: taxon }}]}}
+            and_filter << {bool: {should: [{ term: { taxon_ids: taxon }}]}}
           end
         end
 
