@@ -17,6 +17,11 @@ module Spree
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
       indexes :taxon_names, analyzer: 'snowball'
       indexes :properties, type: 'string', index: 'not_analyzed'
+      indexes :variants do
+        indexes :option_values do
+          indexes :id, type: 'string', index: 'not_analyzed'
+        end
+      end
     end
 
     def as_indexed_json(options={})
