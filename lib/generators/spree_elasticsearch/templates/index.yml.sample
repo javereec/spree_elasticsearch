@@ -1,0 +1,43 @@
+#If you wish to add your own custom analyzers to elasticsearch
+#modify this file.  The template shown below is what we use in our
+#application
+settings:
+  analysis:
+    analyzer:
+      search_analyzer:
+        type: custom
+        filter:
+          - standard
+          - lowercase
+          - asciifolding
+          - stop
+          - synonym
+          - kstem
+        tokenizer: standard
+      ngram_analyzer:
+        type: custom
+        filter:
+          - lowercase
+          - asciifolding
+          - synonym
+          - ngram
+        tokenizer: whitespace
+      whitespace_analyzer:
+        type: custom
+        filter:
+          - lowercase
+          - asciifolding
+        tokenizer: whitespace
+    filter:
+      synonym:
+        type: synonym
+        synonyms_path: analysis/synonyms.txt
+      ngram:
+        max_gram: 20
+        min_gram: 3
+        type: nGram
+        token_chars:
+          - letter
+          - digit
+          - punctuation
+          - symbol
