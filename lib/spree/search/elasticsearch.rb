@@ -40,7 +40,7 @@ module Spree
             sorting: sorting
           ).to_hash
         )
-        search_result.records.limit(per_page).page(page).records
+        search_result.limit(per_page).page(page).records
       end
 
       protected
