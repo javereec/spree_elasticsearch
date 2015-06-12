@@ -14,6 +14,7 @@ module Spree
       indexes :description, analyzer: 'snowball'
       indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :price, type: 'double'
+      indexes :discount_rate, type: 'integer'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
       indexes :image_url, type: 'string', index: 'not_analyzed', include_in_all: false
@@ -34,7 +35,7 @@ module Spree
 
     def as_indexed_json(options={})
       result = as_json({
-        methods: [:price, :sku],
+        methods: [:price, :sku, :discount_rate],
         only: [:available_on, :description, :name, :out_of_date_at, :created_at, :deleted_at, :popularity_score, :trending_score],
         include: {
           variants: {
@@ -59,6 +60,8 @@ module Spree
 
       attribute :price_min, Float
       attribute :price_max, Float
+      attribute :discount_min, Integer
+      attribute :discount_max, Integer
       attribute :properties, Hash, default: {}
       attribute :query, String
       attribute :taxons, Array
@@ -116,6 +119,8 @@ module Spree
           [ {trending_score: {order: "desc" }}, "_score" ]
         when "score"
           [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
+        when "discount"
+          [ {discount_rate: {order: "desc" }}, "_score" ]
         when "recommended"
           [ {popularity_score: {order: "desc" }}, "_score" ]
         else # same as newest
@@ -142,11 +147,18 @@ module Spree
         result[:query][:filtered][:query] = query
         # taxon and property filters have an effect on the facets
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
+
         # filter by price
         price = {}
         price[:gte] = price_min if !price_min.nil? && price_min > 0
         price[:lte] = price_max if !price_max.nil? && price_max > 0
         and_filter << { range: { price: price } } unless price.empty?
+        # filter by discount_rate
+        discount = {}
+        discount[:gte] = discount_min if !discount_min.nil? && discount_min > 0
+        discount[:lte] = discount_max if !discount_max.nil? && discount_max > 0
+        and_filter << { range: { discount_rate: discount } } unless discount.empty?
+
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
         and_filter << { missing: { field: :out_of_date_at } }

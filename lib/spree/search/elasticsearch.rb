@@ -10,6 +10,8 @@ module Spree
       attribute :query, String
       attribute :price_min, Float
       attribute :price_max, Float
+      attribute :discount_min, Integer
+      attribute :discount_max, Integer
       attribute :taxons, Array
       attribute :browse_mode, Boolean, default: true
       attribute :properties, Hash
@@ -30,6 +32,8 @@ module Spree
             browse_mode: browse_mode,
             price_min: price_min,
             price_max: price_max,
+            discount_min: discount_min,
+            discount_max: discount_max,
             properties: properties || {},
             sorting: sorting
           ).to_hash
@@ -76,6 +80,11 @@ module Spree
           if params[:search][:price]
             @price_min = params[:search][:price][:min].to_f
             @price_max = params[:search][:price][:max].to_f
+          end
+          # discount_rate
+          if params[:search][:discount]
+            @discount_min = params[:search][:discount][:min].to_f
+            @discount_max = params[:search][:discount][:max].to_f
           end
           # properties
           @properties = params[:search][:properties]
