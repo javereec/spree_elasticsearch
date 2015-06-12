@@ -13,6 +13,7 @@ module SpreeElasticsearch
 
       def copy_config
         template "elasticsearch.yml.sample", "config/elasticsearch.yml"
+        template "index.yml.sample", "config/index.yml"
       end
     end
   end

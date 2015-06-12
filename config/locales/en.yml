@@ -2,4 +2,10 @@
 # See https://github.com/svenfuchs/rails-i18n/tree/master/rails%2Flocale for starting points.
 
 en:
-  hello: "Hello world"
+  spree:
+    search_sorting:
+      name_asc: Sort by name A - Z
+      name_desc: Sort by name Z - A
+      price_asc: Sort by price low - high
+      price_desc: Sort by price high - low
+      relevancy: Sort by relevancy

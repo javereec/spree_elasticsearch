@@ -1,5 +1,6 @@
 require 'spree_core'
-require 'spree_elasticsearch/engine'
-require 'elasticsearch'
+require 'elasticsearch/model'
+require 'elasticsearch/rails'
 require 'settingslogic'
 require 'virtus'
+require 'spree_elasticsearch/engine'

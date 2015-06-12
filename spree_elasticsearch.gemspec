@@ -2,7 +2,7 @@
 Gem::Specification.new do |s|
   s.platform    = Gem::Platform::RUBY
   s.name        = 'spree_elasticsearch'
-  s.version     = '2.2.0'
+  s.version     = '2.4.2'
   s.summary     = 'Add searching capabilities via Elasticsearch'
   s.description = s.summary
   s.required_ruby_version = '>= 1.9.3'
@@ -16,9 +16,10 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
   s.requirements << 'none'
 
-  s.add_dependency 'elasticsearch', '~> 1.0.0'
+  s.add_dependency 'elasticsearch-model'
+  s.add_dependency 'elasticsearch-rails'
   s.add_dependency 'settingslogic'
-  s.add_dependency 'spree_core', '~> 2.2.2'
+  s.add_dependency 'spree_core', '>= 2.2.0'
   s.add_dependency 'virtus'
 
   s.add_development_dependency 'capybara', '~> 2.1'
