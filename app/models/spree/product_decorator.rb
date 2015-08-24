@@ -148,3 +148,6 @@ module Spree
     end
   end
 end
+
+# Configure client
+Spree::Product.__elasticsearch__.client =  Elasticsearch::Client.new log: true, hosts: Spree::ElasticsearchSettings.hosts
