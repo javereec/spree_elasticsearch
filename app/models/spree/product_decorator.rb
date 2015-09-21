@@ -121,6 +121,7 @@ module Spree
           query: { filtered: {} },
           sort: sorting,
           from: from,
+          size:  Spree::Config.products_per_page,
           facets: facets
         }
 
