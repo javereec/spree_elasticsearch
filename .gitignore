@@ -13,3 +13,5 @@ pkg
 *.swp
 spec/dummy
 config/elasticsearch.yml
+.ruby-version
+.ruby-gemset
