@@ -23,7 +23,7 @@ bundle
 bundle exec rails g spree_elasticsearch:install
 ```
 
-Edit/create the file in `config/elasticsearch.yml` to match your configuration.
+Edit the file in `config/elasticsearch.yml` to match your configuration.
 
 Edit the spree initializer in `config/initializers/spree.rb` and use the elasticsearch searcher.
 
