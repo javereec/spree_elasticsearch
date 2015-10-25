@@ -32,6 +32,9 @@ require 'spree/testing_support/url_helpers'
 # Requires factories defined in lib/spree_elasticsearch/factories.rb
 require 'spree_elasticsearch/factories'
 
+# Allow for indexing
+require 'product_helpers'
+
 RSpec.configure do |config|
   config.include FactoryGirl::Syntax::Methods
 
