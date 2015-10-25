@@ -13,13 +13,14 @@ To understand what is going on, you should first learn about Elasticsearch. Some
 Add spree_elasticsearch to your Gemfile:
 
 ```ruby
-gem 'spree_elasticsearch'
+gem 'spree_elasticsearch', github: 'javereec/spree_elasticsearch', branch: '3-0-stable'
 ```
 
 Bundle your dependencies and run the installation generator:
 
 ```shell
 bundle
+touch config/elasticsearch.yml # temporary install workaround
 bundle exec rails g spree_elasticsearch:install
 ```
 
