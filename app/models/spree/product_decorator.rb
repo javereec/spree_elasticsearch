@@ -5,6 +5,25 @@ module Spree
     index_name Spree::ElasticsearchSettings.index
     document_type 'spree_product'
 
+    settings number_of_shards: 1,
+      number_of_replicas: 0,
+      analysis: {
+        analyzer: {
+           nGram_analyzer: {
+              type: "custom",
+              filter: ["lowercase", "asciifolding", "nGram_filter"],
+              tokenizer: "whitespace" },
+           whitespace_analyzer: {
+              type: "custom",
+              filter: ["lowercase", "asciifolding"],
+              tokenizer: "whitespace" }},
+        filter: {
+           nGram_filter: {
+              max_gram: "20",
+              min_gram: "3",
+              type: "nGram",
+              token_chars: ["letter", "digit", "punctuation", "symbol"] }}}
+
     mapping _all: {"index_analyzer" => "nGram_analyzer", "search_analyzer" => "whitespace_analyzer"} do
       indexes :name, type: 'multi_field' do
         indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
