@@ -15,7 +15,13 @@ module Spree
       indexes :price, type: 'double'
       indexes :sku, type: 'string', index: 'not_analyzed'
       indexes :taxon_ids, type: 'string', index: 'not_analyzed'
+      indexes :taxon_names, analyzer: 'snowball'
       indexes :properties, type: 'string', index: 'not_analyzed'
+      indexes :variants do
+        indexes :option_values do
+          indexes :id, type: 'string', index: 'not_analyzed'
+        end
+      end
     end
 
     def as_indexed_json(options={})
@@ -27,14 +33,20 @@ module Spree
             only: [:sku],
             include: {
               option_values: {
-                only: [:name, :presentation]
+                only: [:id, :name, :presentation]
               }
             }
           }
         }
       })
       result[:properties] = property_list unless property_list.empty?
-      result[:taxon_ids] = taxons.map(&:self_and_ancestors).flatten.uniq.map(&:id) unless taxons.empty?
+
+      if taxons.present?
+        taxon_with_children = taxons.map(&:self_and_ancestors).flatten.uniq
+
+        result[:taxon_ids] = taxon_with_children.map(&:id)
+        result[:taxon_names] = taxon_with_children.map(&:name)
+      end
       result
     end
 
@@ -47,7 +59,9 @@ module Spree
       attribute :price_max, Float
       attribute :properties, Hash
       attribute :query, String
-      attribute :taxons, Array
+      attribute :taxon, String
+      attribute :taxons, Hash
+      attribute :option_types, Hash
       attribute :browse_mode, Boolean
       attribute :sorting, String
 
@@ -64,7 +78,7 @@ module Spree
       #       }
       #       filter: {
       #         and: [
-      #           { terms: { taxons: [] } },
+      #           { bool: { must: [{term: {taxon_ids: []}}] } },
       #           { terms: { properties: [] } }
       #         ]
       #       }
@@ -121,16 +135,37 @@ module Spree
           query: { filtered: {} },
           sort: sorting,
           from: from,
-          facets: facets
+          facets: facets,
+          fields: ["_id"]
         }
 
         # add query and filters to filtered
         result[:query][:filtered][:query] = query
-        # taxon and property filters have an effect on the facets
-        and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
+
+        if taxon.present?
+          and_filter << {
+            bool: {
+              must: [{term: {taxon_ids: taxon}}]
+            }
+          }
+        end
+
+        # option_type, taxon and property filters have an effect on the facets
+        if option_types.present?
+          option_types.each do |option_type_id, option_value_ids|
+            and_filter << {bool: {must: [{ term: { "variants.option_values.id" => option_value_ids }}]}}
+          end
+        end
+
+        if taxons.present?
+          taxons.each do |taxonomy_id, taxon_ids|
+            and_filter << {bool: {must: [{ term: { taxon_ids: taxon_ids }}]}}
+          end
+        end
+
         # only return products that are available
         and_filter << { range: { available_on: { lte: "now" } } }
-        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
+        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
