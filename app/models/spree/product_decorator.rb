@@ -5,11 +5,12 @@ module Spree
     index_name Spree::ElasticsearchSettings.index
     document_type 'spree_product'
 
-    mapping _all: {"index_analyzer" => "nGram_analyzer", "search_analyzer" => "whitespace_analyzer"} do
+    mapping _all: { analyzer: 'nGram_analyzer', search_analyzer: 'whitespace_analyzer' } do
       indexes :name, type: 'multi_field' do
         indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
+
       indexes :description, analyzer: 'snowball'
       indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
       indexes :price, type: 'double'
@@ -77,7 +78,7 @@ module Spree
       #   filter: { range: { price: { lte: , gte: } } },
       #   sort: [],
       #   from: ,
-      #   facets:
+      #   aggregations:
       # }
       def to_hash
         q = { match_all: {} }
@@ -92,31 +93,31 @@ module Spree
           # to { terms: { properties: ["key1||value_a","key1||value_b"] }
           #    { terms: { properties: ["key2||value_a"] }
           # This enforces "and" relation between different property values and "or" relation between same property values
-          properties = @properties.map {|k,v| [k].product(v)}.map do |pair|
-            and_filter << { terms: { properties: pair.map {|prop| prop.join("||")} } }
+          properties = @properties.map{ |key, value| [key].product(value) }.map do |pair|
+            and_filter << { terms: { properties: pair.map { |property| property.join('||') } } }
           end
         end
 
         sorting = case @sorting
-        when "name_asc"
-          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
-        when "name_desc"
-          [ {"name.untouched" => { order: "desc" }}, {"price" => { order: "asc" }}, "_score" ]
-        when "price_asc"
-          [ {"price" => { order: "asc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
-        when "price_desc"
-          [ {"price" => { order: "desc" }}, {"name.untouched" => { order: "asc" }}, "_score" ]
-        when "score"
-          [ "_score", {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }} ]
+        when 'name_asc'
+          [ { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } }, '_score' ]
+        when 'name_desc'
+          [ { 'name.untouched' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
+        when 'price_asc'
+          [ { 'price' => { order: 'asc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
+        when 'price_desc'
+          [ { 'price' => { order: 'desc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
+        when 'score'
+          [ '_score', { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } } ]
         else
-          [ {"name.untouched" => { order: "asc" }}, {"price" => { order: "asc" }}, "_score" ]
+          [ { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } }, '_score' ]
         end
 
-        # facets
-        facets = {
-          price: { statistical: { field: "price" } },
-          properties: { terms: { field: "properties", order: "count", size: 1000000 } },
-          taxon_ids: { terms: { field: "taxon_ids", size: 1000000 } }
+        # aggregations
+        aggregations = {
+          price: { stats: { field: 'price' } },
+          properties: { terms: { field: 'properties', order: { _count: 'asc' }, size: 1000000 } },
+          taxon_ids: { terms: { field: 'taxon_ids', size: 1000000 } }
         }
 
         # basic skeleton
@@ -126,7 +127,7 @@ module Spree
           sort: sorting,
           from: from,
           size:  Spree::Config.products_per_page,
-          facets: facets
+          aggregations: aggregations
         }
 
         # add query and filters to filtered
@@ -134,8 +135,8 @@ module Spree
         # taxon and property filters have an effect on the facets
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # only return products that are available
-        and_filter << { range: { available_on: { lte: "now" } } }
-        result[:query][:filtered][:filter] = { "and" => and_filter } unless and_filter.empty?
+        and_filter << { range: { available_on: { lte: 'now' } } }
+        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)

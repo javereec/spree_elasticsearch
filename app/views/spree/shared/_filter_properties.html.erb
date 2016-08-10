@@ -1,16 +1,16 @@
-<% facets.each do |facet_name, facet| %>
-  <fieldset class="facet">
-    <h4 class="filter"><%= facet_name %></h4>
-    <div class="facet-box">
-      <ul class="filter_choices unstyled">
-        <% facet["terms"].each do |term| %>
-        <li class="nowrap">
-          <input type="checkbox"
-                 id="<%= term["term"] %>"
-                 name="search[properties][<%= facet_name %>][]"
-                 value="<%= term["term"] %>"
-                 <%= params[:search][:properties] && params[:search][:properties][facet_name] && params[:search][:properties][facet_name].include?(term["term"]) ? "checked" : "" %> />
-          <label class="nowrap" for="<%= term["term"] %>"> <%= term["term"] %> (<%= term["count"] %>)</label>
+<% aggregations.each do |aggregation_name, aggregation| %>
+  <fieldset class='facet'>
+    <h4 class='filter'><%= aggregation_name %></h4>
+    <div class='facet-box'>
+      <ul class='filter_choices unstyled'>
+        <% aggregation[:terms].each do |term| %>
+        <li class='nowrap'>
+          <input type='checkbox'
+                 id="<%= term[:term] %>"
+                 name="search[properties][<%= aggregation_name %>][]"
+                 value="<%= term[:term] %>"
+                 <%= params[:search][:properties] && params[:search][:properties][aggregation_name] && params[:search][:properties][aggregation_name].include?(term[:term]) ? 'checked' : '' %> />
+          <label class='nowrap' for="<%= term[:term] %>"> <%= term[:term] %> (<%= term[:count] %>)</label>
         </li>
         <% end %>
       </ul>

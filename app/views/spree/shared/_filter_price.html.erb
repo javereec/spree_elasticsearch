@@ -1,14 +1,14 @@
-<fieldset class="facet">
-  <h4 class="filter"><%= facet.name %></h4>
-  <div class="facet-box">
-    <div class="slider">
-      <div class="rangeslider_top_margin"></div>
-      <input type="text" id="price" />
+<fieldset class='facet'>
+  <h4 class='filter'><%= aggregation.name %></h4>
+  <div class='facet-box'>
+    <div class='slider'>
+      <div class='rangeslider_top_margin'></div>
+      <input type='text' id='price' />
     </div>
-    <div class="slider-input">
-      <input type="text" id="price-min" name="search[price][min]" value"<%= facet["min"] %>">
+    <div class='slider-input'>
+      <input type='text' id='price-min' name='search[price][min]' value="<%= aggregation['min'] %>">
       <span>to</span>
-      <input type="text" id="price-max" name="search[price][max]" value"<%= facet["max"] %>">
+      <input type='text' id='price-max' name='search[price][max]' value="<%= aggregation['max'] %>">
     </div>
   </div>
 </fieldset>
@@ -16,22 +16,22 @@
 <% content_for :head do %>
   <script type='text/javascript'>
     $(document).ready(function(){
-      $("#price-min").change(function () {
+      $('#price-min').change(function () {
         // check if not below minimum
-        $("#price").ionRangeSlider("update", {
+        $('#price').ionRangeSlider('update', {
           from: $(this).val()
         });
       });
 
-      $("#price-max").change(function () {
+      $('#price-max').change(function () {
         // check if not above maximum
-        $("#price").ionRangeSlider("update", {
+        $('#price').ionRangeSlider('update', {
           to: $(this).val()
         });
       });
 
-      minimum = <%= (facet["min"] == facet["max"] ? (facet["min"] - 1) : facet["min"]).floor %>;
-      maximum = <%= (facet["max"] == facet["min"] ? (facet["min"] + 1) : facet["max"]).ceil %>;
+      minimum = <%= (aggregation['min'] == aggregation['max'] ? (aggregation['min'] - 1) : aggregation['min']).floor %>;
+      maximum = <%= (aggregation['max'] == aggregation['min'] ? (aggregation['min'] + 1) : aggregation['max']).ceil %>;
       min_param = minimum;
       <% if params[:search] && params[:search][:price] %>
         min_param = <%= params[:search][:price][:min] %>
@@ -41,7 +41,7 @@
         max_param = <%= params[:search][:price][:max] %>
       <% end %>
 
-      $("#price").ionRangeSlider({
+      $('#price').ionRangeSlider({
         min: minimum,
         max: maximum,
         from: min_param,
@@ -51,13 +51,13 @@
         prefix: "<%= ::Money.new(1, Spree::Config[:currency]).symbol %>",
         prettify: false,
         hasGrid: false,
-        onLoad: function(obj) { 
-          $("#price-min").val(obj.fromNumber);
-          $("#price-max").val(obj.toNumber);
+        onLoad: function(obj) {
+          $('#price-min').val(obj.fromNumber);
+          $('#price-max').val(obj.toNumber);
         },
-        onChange: function(obj) { 
-          $("#price-min").val(obj.fromNumber);
-          $("#price-max").val(obj.toNumber);
+        onChange: function(obj) {
+          $('#price-min').val(obj.fromNumber);
+          $('#price-max').val(obj.toNumber);
         }
       });
     });
