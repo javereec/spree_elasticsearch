@@ -63,8 +63,8 @@ module Spree
       # The idea is to always to use the following schema and fill in the blanks.
       # {
       #   query: {
-      #     filtered: {
-      #       query: {
+      #     bool: {
+      #       must: {
       #         query_string: { query: , fields: [] }
       #       }
       #       filter: {
@@ -87,14 +87,14 @@ module Spree
         end
         query = q
 
-        and_filter = []
+        and_filter = {}
         unless @properties.nil? || @properties.empty?
           # transform properties from [{"key1" => ["value_a","value_b"]},{"key2" => ["value_a"]}
           # to { terms: { properties: ["key1||value_a","key1||value_b"] }
           #    { terms: { properties: ["key2||value_a"] }
           # This enforces "and" relation between different property values and "or" relation between same property values
           properties = @properties.map{ |key, value| [key].product(value) }.map do |pair|
-            and_filter << { terms: { properties: pair.map { |property| property.join('||') } } }
+            and_filter[:terms] = { properties: pair.map { |property| property.join('||') } }
           end
         end
 
@@ -123,20 +123,20 @@ module Spree
         # basic skeleton
         result = {
           min_score: 0.1,
-          query: { filtered: {} },
+          query: { bool: {} },
           sort: sorting,
           from: from,
           size:  Spree::Config.products_per_page,
           aggregations: aggregations
         }
 
-        # add query and filters to filtered
-        result[:query][:filtered][:query] = query
+        # add query and filters to bool
+        result[:query][:bool][:must] = query
         # taxon and property filters have an effect on the facets
-        and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
+        and_filter[:terms] = { taxon_ids: taxons } unless taxons.empty?
         # only return products that are available
-        and_filter << { range: { available_on: { lte: 'now' } } }
-        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
+        and_filter[:range] = { available_on: { lte: 'now' } }
+        result[:query][:bool][:filter] = and_filter unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
