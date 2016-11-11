@@ -11,12 +11,14 @@ module Spree
         t = term[:key].split('||')
         property_name = t[0]
         property_value = t[1]
-        # add a search_term to each term hash to allow searching on the element later on
-        property = { term: property_value, count: term[:doc_count], search_term: term[:key] }
-        if property_names.has_key?(property_name)
-          property_names[property_name] << property
-        else
-          property_names[property_name] = [property]
+        if property_value
+          # add a search_term to each term hash to allow searching on the element later on
+          property = { term: property_value, count: term[:doc_count], search_term: term[:key] }
+          if property_names.has_key?(property_name)
+            property_names[property_name] << property
+          else
+            property_names[property_name] = [property]
+          end
         end
       end
       # next step is to transform the hash to facet objects
