@@ -25,6 +25,7 @@ module Spree
         only: [:available_on, :description, :name],
         include: {
           variants: {
+            methods: [:total_on_hand],
             only: [:sku],
             include: {
               option_values: {
@@ -83,7 +84,7 @@ module Spree
       def to_hash
         q = { match_all: {} }
         unless query.blank? # nil or empty
-          q = { query_string: { query: query, fields: ['name^5','description','sku'], default_operator: 'AND', use_dis_max: true } }
+          q = { query_string: { query: query, fields: ['*name*^5','description','sku', 'variants.sku'], default_operator: 'AND', use_dis_max: true } }
         end
         query = q
 
@@ -110,13 +111,13 @@ module Spree
         when 'score'
           [ '_score', { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } } ]
         else
-          [ { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } }, '_score' ]
+          [ { 'variants.total_on_hand' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
         end
 
         # aggregations
         aggregations = {
           price: { stats: { field: 'price' } },
-          properties: { terms: { field: 'properties', order: { _count: 'asc' }, size: 1000000 } },
+          properties: { terms: { field: 'properties', size: 1000000 } },
           taxon_ids: { terms: { field: 'taxon_ids', size: 1000000 } }
         }
 
