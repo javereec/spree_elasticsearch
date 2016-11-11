@@ -100,16 +100,16 @@ module Spree
         end
 
         sorting = case @sorting
-        when 'name_asc'
-          [ { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } }, '_score' ]
-        when 'name_desc'
-          [ { 'name.untouched' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
+        when 'default'
+          [ { 'variants.total_on_hand' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
+        when 'score'
+          [ '_score', { price: { order: 'asc' } }, { 'name.untouched' => { order: 'asc' } } ]
         when 'price_asc'
           [ { 'price' => { order: 'asc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
         when 'price_desc'
           [ { 'price' => { order: 'desc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
-        when 'score'
-          [ '_score', { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } } ]
+        when 'new_arrival'
+          [ { 'available_on' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
         else
           [ { 'variants.total_on_hand' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
         end
