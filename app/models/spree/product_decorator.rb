@@ -17,6 +17,10 @@ module Spree
       indexes :sku, type: 'keyword', index: true
       indexes :taxon_ids, type: 'keyword', index: true
       indexes :properties, type: 'keyword', index: true
+      indexes :classifications, type: 'nested' do
+        indexes :taxon_id, type: 'integer'
+        indexes :position, type: 'integer'
+      end
     end
 
     def as_indexed_json(options={})
@@ -24,6 +28,9 @@ module Spree
         methods: [:price, :sku],
         only: [:available_on, :description, :name],
         include: {
+          classifications: {
+            only: [:taxon_id, :position]
+          },
           variants: {
             only: [:sku],
             include: {
@@ -107,6 +114,8 @@ module Spree
           [ { 'price' => { order: 'asc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
         when 'price_desc'
           [ { 'price' => { order: 'desc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
+        when 'classification'
+          [ { 'classifications.position' => { mode: 'min', order: 'asc', nested_path: 'classifications' } } ]
         when 'score'
           [ '_score', { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } } ]
         else
