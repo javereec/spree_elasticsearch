@@ -84,7 +84,13 @@ module Spree
       def to_hash
         q = { match_all: {} }
         unless query.blank? # nil or empty
-          q = { query_string: { query: query, fields: ['*name*^5','description','sku', 'variants.sku'], default_operator: 'AND', use_dis_max: true } }
+          q = { query_string: { 
+                query: query,
+                fields: ['name^10','description','sku', 'variants.sku', 'variant.*', 'name.*^.1'],
+                default_operator: 'AND',
+                use_dis_max: true 
+                } 
+              }
         end
         query = q
 
@@ -111,7 +117,7 @@ module Spree
         when 'new_arrival'
           [ { 'available_on' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
         else
-          [ { 'variants.total_on_hand' => { order: 'desc' } }, { price: { order: 'asc' } }, '_score' ]
+          [ '_score', { 'variants.total_on_hand' => { order: 'desc' } }, { price: { order: 'asc' } } ]
         end
 
         # aggregations
@@ -123,7 +129,7 @@ module Spree
 
         # basic skeleton
         result = {
-          min_score: 0.1,
+          min_score: 1,
           query: { bool: {} },
           sort: sorting,
           from: from,
