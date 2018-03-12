@@ -9,7 +9,7 @@ module Spree
     before do
       # for clean testing, delete index, create new one and create/update mapping
       Product.delete_all
-      client = Elasticsearch::Client.new log: true, hosts: ElasticsearchSettings.hosts
+      client = Elasticsearch::Client.new log: false, hosts: ElasticsearchSettings.hosts
 
       if Elasticsearch::Model.client.indices.exists index: Spree::ElasticsearchSettings.index
         client.indices.delete index: ElasticsearchSettings.index
