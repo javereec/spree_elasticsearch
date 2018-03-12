@@ -6,8 +6,8 @@ module Spree
     document_type 'spree_product'
 
     mapping _all: { analyzer: 'nGram_analyzer', search_analyzer: 'whitespace_analyzer' } do
-      indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
+      indexes :name, type: 'text' do
+        indexes :name, type: 'text', analyzer: 'nGram_analyzer', boost: 100
         indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
       end
 
@@ -123,23 +123,23 @@ module Spree
         # basic skeleton
         result = {
           min_score: 0.1,
-          query: { filtered: {} },
+          query: { bool: {} },
           sort: sorting,
           from: from,
           aggregations: aggregations
         }
 
-        # add query and filters to filtered
-        result[:query][:filtered][:query] = query
+        # add query and filters to filterd
+        result[:query][:bool][:must] = query
         # taxon and property filters have an effect on the facets
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: 'now' } } }
-        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
+        result[:query][:bool][:filter] = and_filter unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
-          result[:filter] = { range: { price: { gte: price_min, lte: price_max } } }
+          result[:post_filter] = { range: { price: { gte: price_min, lte: price_max } } }
         end
 
         result
