@@ -7,20 +7,8 @@ RSpec.configure do |config|
     config.after(:suite) { stop_elastic_cluster }
   end
 
-  SEARCHABLE_MODELS = [Spree::Product].freeze
-
-  # create indices for searchable models
-  config.before do
-    SEARCHABLE_MODELS.each do |model|
-      # model.import
-    end
-  end
-
   # delete indices for searchable models to keep clean state between tests
   config.after do
-    SEARCHABLE_MODELS.each do |model|
-      # model.client.indices.delete index: 'foo'
-    end
   end
 end
 
@@ -32,7 +20,7 @@ def start_elastic_cluster
   ENV['ELASTICSEARCH_URL'] = "http://localhost:#{ENV['TEST_CLUSTER_PORT']}"
 
   return if Elasticsearch::Extensions::Test::Cluster.running?
-  Elasticsearch::Extensions::Test::Cluster.start(timeout: 60)
+  Elasticsearch::Extensions::Test::Cluster.start(timeout: 60, clear_cluster: true)
 end
 
 def stop_elastic_cluster
