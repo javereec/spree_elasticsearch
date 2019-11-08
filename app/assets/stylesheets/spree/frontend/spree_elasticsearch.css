@@ -1,7 +1,5 @@
 /*
 * This is a manifest file that includes stylesheets for spree_elasticsearch
- *= require normalize
- *= require skeleton
  *= require ion.rangeSlider
  *= require ion.rangeSlider.skinFlat
 */

@@ -6,17 +6,21 @@ module Spree
     document_type 'spree_product'
 
     mapping _all: { analyzer: 'nGram_analyzer', search_analyzer: 'whitespace_analyzer' } do
-      indexes :name, type: 'multi_field' do
-        indexes :name, type: 'string', analyzer: 'nGram_analyzer', boost: 100
-        indexes :untouched, type: 'string', include_in_all: false, index: 'not_analyzed'
+      indexes :name, type: 'text' do
+        indexes :name, type: 'text', boost: 100, analyzer: 'nGram_analyzer', index: true
+        indexes :untouched, type: 'keyword', index: false
       end
 
       indexes :description, analyzer: 'snowball'
-      indexes :available_on, type: 'date', format: 'dateOptionalTime', include_in_all: false
+      indexes :available_on, type: 'date', format: 'dateOptionalTime'
       indexes :price, type: 'double'
-      indexes :sku, type: 'string', index: 'not_analyzed'
-      indexes :taxon_ids, type: 'string', index: 'not_analyzed'
-      indexes :properties, type: 'string', index: 'not_analyzed'
+      indexes :sku, type: 'keyword', index: true
+      indexes :taxon_ids, type: 'keyword', index: true
+      indexes :properties, type: 'keyword', index: true
+      indexes :classifications, type: 'nested' do
+        indexes :taxon_id, type: 'integer'
+        indexes :position, type: 'integer'
+      end
     end
 
     def as_indexed_json(options={})
@@ -24,6 +28,9 @@ module Spree
         methods: [:price, :sku],
         only: [:available_on, :description, :name],
         include: {
+          classifications: {
+            only: [:taxon_id, :position]
+          },
           variants: {
             only: [:sku],
             include: {
@@ -107,6 +114,8 @@ module Spree
           [ { 'price' => { order: 'asc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
         when 'price_desc'
           [ { 'price' => { order: 'desc' } }, { 'name.untouched' => { order: 'asc' } }, '_score' ]
+        when 'classification'
+          [ { 'classifications.position' => { mode: 'min', order: 'asc', nested_path: 'classifications' } } ]
         when 'score'
           [ '_score', { 'name.untouched' => { order: 'asc' } }, { price: { order: 'asc' } } ]
         else
@@ -123,23 +132,23 @@ module Spree
         # basic skeleton
         result = {
           min_score: 0.1,
-          query: { filtered: {} },
+          query: { bool: {} },
           sort: sorting,
           from: from,
           aggregations: aggregations
         }
 
-        # add query and filters to filtered
-        result[:query][:filtered][:query] = query
+        # add query and filters to filterd
+        result[:query][:bool][:must] = query
         # taxon and property filters have an effect on the facets
         and_filter << { terms: { taxon_ids: taxons } } unless taxons.empty?
         # only return products that are available
         and_filter << { range: { available_on: { lte: 'now' } } }
-        result[:query][:filtered][:filter] = { and: and_filter } unless and_filter.empty?
+        result[:query][:bool][:filter] = and_filter unless and_filter.empty?
 
         # add price filter outside the query because it should have no effect on facets
         if price_min && price_max && (price_min < price_max)
-          result[:filter] = { range: { price: { gte: price_min, lte: price_max } } }
+          result[:post_filter] = { range: { price: { gte: price_min, lte: price_max } } }
         end
 
         result
